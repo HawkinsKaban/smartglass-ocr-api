@@ -2118,31 +2118,17 @@ class SmartGlassOCR:
         return processed_images, image_data
     
     def _resize_for_optimal_ocr(self, image, image_stats: ImageStats) -> np.ndarray:
-        """
-        Resize the image for optimal OCR performance
-        
-        Args:
-            image: Grayscale image
-            image_stats: Image statistics
-            
-        Returns:
-            Resized image if needed, or original image
-        """
+        """Resize the image for optimal OCR performance"""
         height, width = image_stats.height, image_stats.width
         max_dimension = self.config["max_image_dimension"]
         
-        # If image is very small, scale it up
-        if width < 800 or height < 800:
-            # Scale up small images for better OCR
-            scale_factor = min(3, max(800 / width, 800 / height))
-            new_width = int(width * scale_factor)
-            new_height = int(height * scale_factor)
-            return cv2.resize(image, (new_width, new_height), interpolation=cv2.INTER_CUBIC)
+        # For handwritten text, use a smaller max dimension
+        if image_stats.image_type == ImageType.HANDWRITTEN:
+            max_dimension = min(max_dimension, 1500)  # Limit size for handwritten images
         
-        # If image is very large, scale it down
-        elif width > max_dimension or height > max_dimension:
-            # Scale down very large images
-            scale_factor = max(0.3, min(max_dimension / width, max_dimension / height))
+        # If image is very large, scale it down more aggressively
+        if width > max_dimension or height > max_dimension:
+            scale_factor = min(max_dimension / width, max_dimension / height)
             new_width = int(width * scale_factor)
             new_height = int(height * scale_factor)
             return cv2.resize(image, (new_width, new_height), interpolation=cv2.INTER_AREA)
@@ -2226,6 +2212,29 @@ class SmartGlassOCR:
             # Apply contrast enhancement to recover details
             clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
             return clahe.apply(glare_reduced)
+    
+    def _perform_enhanced_easyocr_with_fallback(self, image, layout_info):
+        """Enhanced EasyOCR with better error handling"""
+        try:
+            # Try standard EasyOCR process
+            text, confidence, method, regions = self._perform_enhanced_easyocr(image, layout_info)
+            if text and confidence > 0:
+                return text, confidence, method, regions
+        except Exception as e:
+            logger.warning(f"Primary EasyOCR method failed: {e}, trying alternatives")
+        
+        # Try with different preprocessing if primary method fails
+        try:
+            # Apply different preprocessing 
+            gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+            # Enhance contrast
+            clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
+            enhanced = clahe.apply(gray)
+            # Try EasyOCR again with preprocessed image
+            return self._perform_enhanced_easyocr(enhanced, layout_info)
+        except Exception as e:
+            logger.error(f"All EasyOCR methods failed: {e}")
+            return "", 0, "error", []
     
     def _save_debug_images(self, image_data, original_path):
         """
@@ -2626,7 +2635,7 @@ class SmartGlassOCR:
                         custom_config += ' --dpi 300'
                     
                     # For scientific texts, improve digit and formula recognition
-                    if image_stats.image_type == ImageType.SCIENTIFIC:
+                    if "image_type" in layout_info and layout_info["document_type"] == "scientific":
                         custom_config += ' -c tessedit_char_whitelist="0123456789.+-=()[]{}<>ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"'
                     
                     # Convert to PIL image for Tesseract
@@ -6467,6 +6476,8 @@ def process_directory(directory_path, output_dir=None, language=None, summary_le
     
     print(f"Processed {len(files)} files")
     return results
+
+    
 
 def main():
     """Main function for command line usage"""
