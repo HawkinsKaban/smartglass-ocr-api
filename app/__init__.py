@@ -1,14 +1,21 @@
 import os
 from flask import Flask
+from flask_cors import CORS
 
 def create_app(test_config=None):
     """Create and configure the Flask application"""
     # Create app instance
     app = Flask(__name__)
     
-    # Load default configuration
-    from app.config import Config
-    app.config.from_object(Config)
+    # Enable CORS
+    CORS(app)
+    
+    # Determine environment
+    env = os.environ.get('FLASK_ENV', 'development')
+    
+    # Load configuration
+    from app.config import config_by_name
+    app.config.from_object(config_by_name[env])
     
     # Load test configuration if provided
     if test_config:
@@ -24,6 +31,17 @@ def create_app(test_config=None):
     
     # Register error handlers
     register_error_handlers(app)
+    
+    # Add health check endpoint
+    @app.route('/health')
+    def health_check():
+        return {'status': 'healthy'}, 200
+    
+    # Add redirect from root to API docs
+    @app.route('/')
+    def index():
+        from flask import redirect
+        return redirect('/api/docs')
     
     return app
 
