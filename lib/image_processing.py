@@ -1128,7 +1128,7 @@ class ImageProcessor:
         image_data["text_only"] = text_only
         processed_images.append("text_only")
     
-    def _preprocess_multi_column(self, base_image, image_data, processed_images, width, height):
+    def _preprocess_multi_column(self, base_image, image_data, processed_images):
         """
         Optimized preprocessing for multi-column layouts
         
@@ -1136,12 +1136,13 @@ class ImageProcessor:
             base_image: Base image to process
             image_data: Dictionary to store processed images
             processed_images: List to track processing methods
-            width: Image width - fixed bug by adding this parameter
-            height: Image height - fixed bug by adding this parameter
         """
         # Enhance contrast
         clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
         contrast_enhanced = clahe.apply(base_image)
+        
+        # Get image dimensions for processing
+        height, width = base_image.shape[:2]
         
         # Apply denoising
         denoised = cv2.fastNlMeansDenoising(contrast_enhanced, None, 10, 7, 21)
@@ -1163,15 +1164,14 @@ class ImageProcessor:
         # Perform vertical projection to detect column boundaries
         vertical_projection = np.sum(otsu, axis=0) / 255
         
-        # Bug fix: Calculate kernel_size using width parameter
-        # Before: kernel_size = max(3, int(width / 100)) - width was not defined
-        # After: use width parameter passed to this function
+        # Calculate kernel size based on width
         kernel_size = max(3, int(width / 100))
         if kernel_size % 2 == 0:
             kernel_size += 1  # Ensure odd kernel size
             
-        vertical_projection_smoothed = cv2.GaussianBlur(vertical_projection.reshape(-1, 1), 
-                                                      (1, kernel_size), 0).flatten()
+        vertical_projection_smoothed = cv2.GaussianBlur(
+            vertical_projection.reshape(-1, 1), (1, kernel_size), 0
+        ).flatten()
         
         # Create visual representation of column detection
         column_visual = otsu.copy()
@@ -1187,9 +1187,9 @@ class ImageProcessor:
         processed_images.append("column_detected")
         
         # Enhanced processing for multi-column text
-        adaptive = cv2.adaptiveThreshold(denoised, 255, 
-                                       cv2.ADAPTIVE_THRESH_MEAN_C, 
-                                       cv2.THRESH_BINARY, 15, 8)
+        adaptive = cv2.adaptiveThreshold(
+            denoised, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 15, 8
+        )
         image_data["adaptive"] = adaptive
         processed_images.append("adaptive")
     
@@ -1425,3 +1425,80 @@ class ImageProcessor:
         
         # Default to standard processing
         return ProcessingStrategy.STANDARD
+    
+
+    def auto_rotate(self, image):
+        """
+        Auto-rotate image based on orientation detection
+        
+        Args:
+            image: OpenCV image
+            
+        Returns:
+            Rotated image
+        """
+        try:
+            # Get image dimensions
+            height, width = image.shape[:2]
+            
+            # Convert to grayscale if needed
+            if len(image.shape) > 2:
+                gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+            else:
+                gray = image
+            
+            # Use edge detection to find lines
+            edges = cv2.Canny(gray, 50, 150, apertureSize=3)
+            
+            # Find lines using Hough transform
+            lines = cv2.HoughLinesP(edges, 1, np.pi/180, 100, minLineLength=width/4, maxLineGap=20)
+            
+            if lines is None or len(lines) == 0:
+                return image  # No rotation needed
+            
+            # Compute angles of lines
+            angles = []
+            for line in lines:
+                x1, y1, x2, y2 = line[0]
+                if x2 - x1 == 0:  # Avoid division by zero
+                    continue
+                angle = np.arctan2(y2 - y1, x2 - x1) * 180.0 / np.pi
+                angles.append(angle)
+            
+            # Find dominant angle (horizontal or vertical lines)
+            angle_counts = {}
+            for angle in angles:
+                # Normalize angle to 0-180 range
+                norm_angle = angle % 180
+                # Group similar angles (within 2 degrees)
+                grouped_angle = round(norm_angle / 2) * 2
+                angle_counts[grouped_angle] = angle_counts.get(grouped_angle, 0) + 1
+            
+            if not angle_counts:
+                return image  # No valid angles found
+            
+            # Get most common angle
+            dominant_angle = max(angle_counts.items(), key=lambda x: x[1])[0]
+            
+            # Convert to rotation angle (adjust to make horizontal/vertical)
+            if 45 <= dominant_angle <= 135:
+                # Closer to vertical
+                rotation_angle = dominant_angle - 90
+            else:
+                # Closer to horizontal
+                rotation_angle = dominant_angle
+            
+            # Only rotate if angle is significant
+            if abs(rotation_angle) < 1:
+                return image  # No significant rotation needed
+            
+            # Rotate the image
+            (h, w) = image.shape[:2]
+            center = (w // 2, h // 2)
+            M = cv2.getRotationMatrix2D(center, rotation_angle, 1.0)
+            rotated = cv2.warpAffine(image, M, (w, h), flags=cv2.INTER_CUBIC, borderMode=cv2.BORDER_REPLICATE)
+            
+            return rotated
+        except Exception as e:
+            logger.warning(f"Auto-rotation failed: {e}")
+            return image  # Return original if rotation fails

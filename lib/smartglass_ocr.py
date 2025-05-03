@@ -507,11 +507,11 @@ class SmartGlassOCR:
             image_stats = self.image_processor.analyze_image(image)
             
             logger.info(f"Enhanced image analysis: {image_stats.image_type.value}, " 
-                       f"{image_stats.width}x{image_stats.height}, "
-                       f"brightness: {image_stats.brightness:.1f}, "
-                       f"contrast: {image_stats.contrast:.1f}, "
-                       f"blur: {image_stats.blur:.1f}, "
-                       f"table_likelihood: {image_stats.table_likelihood:.2f}")
+                    f"{image_stats.width}x{image_stats.height}, "
+                    f"brightness: {image_stats.brightness:.1f}, "
+                    f"contrast: {image_stats.contrast:.1f}, "
+                    f"blur: {image_stats.blur:.1f}, "
+                    f"table_likelihood: {image_stats.table_likelihood:.2f}")
             
             # Step 3: Determine the best processing strategy based on image type and stats
             strategy = self.image_processor.determine_processing_strategy(image_stats)
@@ -793,47 +793,135 @@ class SmartGlassOCR:
 
 # Additional utility functions for standalone usage
 
-def process_file(file_path, output=None, language=None, page=0, summary_length=200, summary_style="concise"):
-    """Process a file in standalone mode with enhanced options"""
-    # Create OCR engine
-    ocr = SmartGlassOCR()
-    
-    # Process the file
-    results = ocr.process_file(
-        file_path=file_path,
-        language=language,
-        page=page,
-        summary_length=summary_length,
-        summary_style=summary_style
-    )
-    
-    # Print results to console
-    if results["status"] == "success" or results["status"] == "partial_success":
-        print(f"Status: {results['status']} (Confidence: {results.get('confidence', 0):.1f}%)")
-        print(f"Image Type: {results['metadata'].get('image_type', 'unknown')}")
-        print(f"OCR Engine: {results['metadata'].get('best_engine', 'unknown')}")
-        print(f"Processing Time: {results['metadata'].get('processing_time_ms', 0):.1f} ms")
-        print(f"Detected Language: {results['metadata'].get('detected_language', 'unknown')}")
-        print("\n--- Summary ---")
-        print(results.get("summary", "No summary available"))
-        print("\n--- Full Text ---")
-        print(results.get("text", "No text extracted"))
-    else:
-        print(f"Error: {results.get('message', 'Unknown error')}")
-    
-    # Save to output file if specified
-    if output:
-        with open(output, 'w', encoding='utf-8') as f:
-            if results["status"] == "success" or results["status"] == "partial_success":
-                f.write("--- Summary ---\n")
-                f.write(results.get("summary", "No summary available"))
-                f.write("\n\n--- Full Text ---\n")
-                f.write(results.get("text", "No text extracted"))
+    def process_file(self, file_path: str, original_filename: str = None, language: str = None, 
+                    page: int = 0, summary_length: int = None, 
+                    summary_style: str = None) -> dict:
+        """
+        Process a file (image or PDF) and extract text with summarization
+        
+        Args:
+            file_path: Path to the file
+            original_filename: Original filename (if different from file_path)
+            language: OCR language (default from config)
+            page: Page number for PDF (0-based)
+            summary_length: Maximum summary length
+            summary_style: Style of summary (concise, detailed, bullets, structured)
+            
+        Returns:
+            Dictionary with OCR results
+        """
+        start_time = time.time()
+        
+        # Set original filename if not provided
+        if original_filename is None:
+            original_filename = os.path.basename(file_path)
+        
+        # Use default values if not provided
+        language = language or self.config["default_language"]
+        summary_length = summary_length or self.config["summary_length"]
+        summary_style = summary_style or self.config["summary_style"]
+        
+        # Check file extension
+        ext = os.path.splitext(file_path)[1][1:].lower()
+        if ext not in self.config["allowed_extensions"]:
+            return {"status": "error", "message": "Unsupported file type"}
+        
+        try:
+            # Handle PDF vs image
+            is_pdf = ext == 'pdf'
+            
+            if is_pdf:
+                if not PDF2IMAGE_AVAILABLE:
+                    return {"status": "error", "message": "PDF processing not available"}
+                
+                # Convert PDF to image
+                logger.info(f"Converting PDF to image: {file_path}, page {page}")
+                image_path, total_pages = self._convert_pdf_to_image(file_path, page)
+                
+                if not image_path:
+                    return {"status": "error", "message": "Failed to convert PDF to image"}
+                    
+                # Process the image
+                image_results = self._process_image(image_path, language)
+                
+                # Ensure metadata exists
+                if "metadata" not in image_results:
+                    image_results["metadata"] = {}
+                
+                # Add PDF-specific metadata
+                image_results["metadata"].update({
+                    "file_type": "pdf",
+                    "page": page,
+                    "total_pages": total_pages
+                })
+                
+                # Clean up temporary image
+                try:
+                    os.remove(image_path)
+                except Exception as e:
+                    logger.warning(f"Failed to remove temporary PDF image: {e}")
             else:
-                f.write(f"Error: {results.get('message', 'Unknown error')}")
-        print(f"Results saved to {output}")
-    
-    return results
+                # Process the image directly
+                logger.info(f"Processing image: {file_path}")
+                image_results = self._process_image(file_path, language)
+                
+                # Ensure metadata exists
+                if "metadata" not in image_results:
+                    image_results["metadata"] = {}
+                    
+                image_results["metadata"]["file_type"] = "image"
+            
+            # Generate summary if text was extracted successfully
+            if image_results["status"] in ["success", "partial_success"] and image_results.get("text"):
+                from .text_processing import generate_summary, detect_document_structure, extract_key_insights
+                
+                text = image_results.get("text", "")
+                
+                # Use enhanced extractive summarization
+                summary = generate_summary(text, max_length=summary_length, style=summary_style)
+                image_results["summary"] = summary
+                
+                # Extract document structure
+                structure = detect_document_structure(text)
+                image_results["document_structure"] = structure.value
+                
+                # Extract key insights if enabled
+                if self.config["extract_key_insights"] and len(text) > 200:
+                    insights = extract_key_insights(text)
+                    image_results["key_insights"] = insights
+            else:
+                image_results["summary"] = ""
+            
+            # Add processing time
+            processing_time = time.time() - start_time
+            
+            # Ensure metadata exists
+            if "metadata" not in image_results:
+                image_results["metadata"] = {}
+                
+            image_results["metadata"]["processing_time_ms"] = round(processing_time * 1000, 2)
+            
+            # Update processing stats
+            self._update_processing_stats(image_results, processing_time)
+            
+            # Apply organized output format if enabled
+            if self.config["organized_output_format"]:
+                from .information_extraction import organize_output
+                image_results = organize_output(image_results)
+            
+            return image_results
+            
+        except Exception as e:
+            logger.error(f"Error processing file: {e}")
+            import traceback
+            logger.error(traceback.format_exc())
+            return {
+                "status": "error", 
+                "message": f"Processing failed: {str(e)}",
+                "metadata": {
+                    "processing_time_ms": round((time.time() - start_time) * 1000, 2)
+                }
+            }
 
 def process_directory(directory_path, output_dir=None, language=None, summary_length=200, summary_style="concise"):
     """Process all supported files in a directory"""

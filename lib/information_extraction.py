@@ -560,3 +560,50 @@ class InformationExtractor:
                     info[field] = value
         
         return info
+
+    def organize_output(results: dict) -> dict:
+        """
+        Organize OCR results in a clean, structured format
+        
+        Args:
+            results: OCR results dictionary
+            
+        Returns:
+            Organized results dictionary
+        """
+        # If results already has an error status, return it unchanged
+        if results.get("status") == "error":
+            return results
+        
+        # Make a copy of the results to avoid modifying the original
+        organized = results.copy()
+        
+        # Ensure required fields exist
+        if "text" not in organized:
+            organized["text"] = ""
+        if "confidence" not in organized:
+            organized["confidence"] = 0.0
+        if "metadata" not in organized:
+            organized["metadata"] = {}
+        
+        # Clean up metadata section
+        if "metadata" in organized:
+            # Remove redundant or empty fields
+            metadata = organized["metadata"]
+            # Ensure all required metadata fields exist
+            if "detected_language" not in metadata:
+                metadata["detected_language"] = "unknown"
+            if "image_type" not in metadata:
+                metadata["image_type"] = "unknown"
+            if "best_engine" not in metadata:
+                metadata["best_engine"] = "unknown"
+            # Keep processing time if it exists
+            if "processing_time_ms" not in metadata:
+                metadata["processing_time_ms"] = 0.0
+        
+        # Add a timestamp to the organized results
+        import time
+        from datetime import datetime
+        organized["timestamp"] = datetime.now().isoformat()
+        
+        return organized

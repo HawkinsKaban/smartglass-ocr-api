@@ -418,3 +418,260 @@ KeyError: 'metadata'
 2025-05-03 21:40:30,975 - INFO - EasyOCR initialized successfully
 2025-05-03 21:40:38,676 - INFO - 127.0.0.1 - - [03/May/2025 21:40:38] "GET /api/ HTTP/1.1" 200 -
 2025-05-03 21:40:43,467 - INFO - 127.0.0.1 - - [03/May/2025 21:40:43] "GET /api/docs HTTP/1.1" 200 -
+2025-05-03 22:00:40,764 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-03 22:00:40,770 - WARNING - PaddleOCR not available
+2025-05-03 22:00:40,847 - INFO - Tesseract version: 5.5.0.20241111
+2025-05-03 22:00:40,848 - INFO - SmartGlassOCR v4.1.0 initialized
+2025-05-03 22:00:40,848 - INFO - Available OCR engines: ['tesseract', 'easyocr']
+2025-05-03 22:00:40,848 - INFO - Running in standard mode
+2025-05-03 22:00:40,850 - INFO - OCR Processor initialized successfully
+2025-05-03 22:00:40,903 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.8.192:5000
+2025-05-03 22:00:40,903 - INFO - [33mPress CTRL+C to quit[0m
+2025-05-03 22:00:40,906 - INFO -  * Restarting with stat
+2025-05-03 22:00:43,653 - INFO - EasyOCR initialized successfully
+2025-05-03 22:00:50,012 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-03 22:00:50,015 - WARNING - PaddleOCR not available
+2025-05-03 22:00:50,049 - INFO - Tesseract version: 5.5.0.20241111
+2025-05-03 22:00:50,049 - INFO - SmartGlassOCR v4.1.0 initialized
+2025-05-03 22:00:50,050 - INFO - Available OCR engines: ['tesseract', 'easyocr']
+2025-05-03 22:00:50,050 - INFO - Running in standard mode
+2025-05-03 22:00:50,052 - INFO - OCR Processor initialized successfully
+2025-05-03 22:00:50,075 - WARNING -  * Debugger is active!
+2025-05-03 22:00:50,087 - INFO -  * Debugger PIN: 409-810-023
+2025-05-03 22:00:52,674 - INFO - EasyOCR initialized successfully
+2025-05-03 22:00:57,509 - INFO - 127.0.0.1 - - [03/May/2025 22:00:57] "GET /api/ HTTP/1.1" 200 -
+2025-05-03 22:01:00,236 - INFO - 127.0.0.1 - - [03/May/2025 22:01:00] "GET /api/docs HTTP/1.1" 200 -
+2025-05-03 22:01:04,102 - INFO - Processing file: Cuplikan layar 2025-03-23 113032.png
+2025-05-03 22:01:04,103 - INFO - Processing image: data/uploads\Cuplikan_layar_2025-03-23_113032_1746284464_2c6869e0.png
+2025-05-03 22:01:04,126 - INFO - Enhanced image analysis: document, 279x149, brightness: 236.7, contrast: 52.2, blur: 10583.6, table_likelihood: 43.91
+2025-05-03 22:01:04,126 - INFO - Using processing strategy: document
+2025-05-03 22:01:04,126 - ERROR - Error processing image: 'ImageProcessor' object has no attribute 'auto_rotate'
+2025-05-03 22:01:04,127 - ERROR - Traceback (most recent call last):
+  File "D:\KERJA\Bantu Teman\smartglass-ocr-api\lib\smartglass_ocr.py", line 522, in _process_image
+    image = self.image_processor.auto_rotate(image)
+AttributeError: 'ImageProcessor' object has no attribute 'auto_rotate'
+
+2025-05-03 22:01:04,127 - ERROR - Error processing file: 'metadata'
+2025-05-03 22:01:04,128 - ERROR - Traceback (most recent call last):
+  File "D:\KERJA\Bantu Teman\smartglass-ocr-api\lib\smartglass_ocr.py", line 366, in process_file
+    image_results["metadata"]["file_type"] = "image"
+KeyError: 'metadata'
+
+2025-05-03 22:01:04,129 - INFO - Markdown file saved: Cuplikanlayar2025-03-23113032_1746284464.md
+2025-05-03 22:01:04,130 - INFO - File processed in 0.03 seconds: Cuplikan layar 2025-03-23 113032.png
+2025-05-03 22:01:04,130 - INFO - 127.0.0.1 - - [03/May/2025 22:01:04] "POST /api/process HTTP/1.1" 200 -
+2025-05-03 22:01:20,254 - INFO - Processing file: Cuplikan layar 2025-04-17 153755.png
+2025-05-03 22:01:20,255 - INFO - Processing image: data/uploads\Cuplikan_layar_2025-04-17_153755_1746284480_68cb2c29.png
+2025-05-03 22:01:20,369 - INFO - Enhanced image analysis: newspaper, 857x601, brightness: 238.0, contrast: 52.6, blur: 7548.1, table_likelihood: 53.92
+2025-05-03 22:01:20,369 - INFO - Using processing strategy: multi_column
+2025-05-03 22:01:20,370 - ERROR - Error processing image: 'ImageProcessor' object has no attribute 'auto_rotate'
+2025-05-03 22:01:20,371 - ERROR - Traceback (most recent call last):
+  File "D:\KERJA\Bantu Teman\smartglass-ocr-api\lib\smartglass_ocr.py", line 522, in _process_image
+    image = self.image_processor.auto_rotate(image)
+AttributeError: 'ImageProcessor' object has no attribute 'auto_rotate'
+
+2025-05-03 22:01:20,371 - ERROR - Error processing file: 'metadata'
+2025-05-03 22:01:20,372 - ERROR - Traceback (most recent call last):
+  File "D:\KERJA\Bantu Teman\smartglass-ocr-api\lib\smartglass_ocr.py", line 366, in process_file
+    image_results["metadata"]["file_type"] = "image"
+KeyError: 'metadata'
+
+2025-05-03 22:01:20,383 - INFO - Markdown file saved: Cuplikanlayar2025-04-17153755_1746284480.md
+2025-05-03 22:01:20,383 - INFO - File processed in 0.13 seconds: Cuplikan layar 2025-04-17 153755.png
+2025-05-03 22:01:20,384 - INFO - 127.0.0.1 - - [03/May/2025 22:01:20] "POST /api/process HTTP/1.1" 200 -
+2025-05-03 22:01:30,121 - INFO - Detected handwritten content, switching to handwritten mode
+2025-05-03 22:01:30,122 - INFO - Processing file: Cuplikan layar 2025-04-25 112052.png
+2025-05-03 22:01:30,123 - INFO - Processing image: data/uploads\Cuplikan_layar_2025-04-25_112052_1746284490_4b1aaa7c.png
+2025-05-03 22:01:30,225 - INFO - Enhanced image analysis: handwritten, 1168x648, brightness: 247.5, contrast: 35.1, blur: 6170.2, table_likelihood: 46.48
+2025-05-03 22:01:30,226 - INFO - Using processing strategy: handwritten
+2025-05-03 22:01:30,226 - ERROR - Error processing image: 'ImageProcessor' object has no attribute 'auto_rotate'
+2025-05-03 22:01:30,227 - ERROR - Traceback (most recent call last):
+  File "D:\KERJA\Bantu Teman\smartglass-ocr-api\lib\smartglass_ocr.py", line 522, in _process_image
+    image = self.image_processor.auto_rotate(image)
+AttributeError: 'ImageProcessor' object has no attribute 'auto_rotate'
+
+2025-05-03 22:01:30,228 - ERROR - Error processing file: 'metadata'
+2025-05-03 22:01:30,228 - ERROR - Traceback (most recent call last):
+  File "D:\KERJA\Bantu Teman\smartglass-ocr-api\lib\smartglass_ocr.py", line 366, in process_file
+    image_results["metadata"]["file_type"] = "image"
+KeyError: 'metadata'
+
+2025-05-03 22:01:30,230 - INFO - Markdown file saved: Cuplikanlayar2025-04-25112052_1746284490.md
+2025-05-03 22:01:30,230 - INFO - File processed in 0.11 seconds: Cuplikan layar 2025-04-25 112052.png
+2025-05-03 22:01:30,231 - INFO - 127.0.0.1 - - [03/May/2025 22:01:30] "POST /api/process HTTP/1.1" 200 -
+2025-05-03 22:01:34,577 - INFO - 127.0.0.1 - - [03/May/2025 22:01:34] "GET /api/markdown HTTP/1.1" 200 -
+2025-05-03 22:01:38,432 - INFO - 127.0.0.1 - - [03/May/2025 22:01:38] "[33mGET /api/markdown/filename.md HTTP/1.1[0m" 404 -
+2025-05-03 22:01:43,912 - INFO - 127.0.0.1 - - [03/May/2025 22:01:43] "[33mGET /api/markdown/filename.md?raw=true HTTP/1.1[0m" 404 -
+2025-05-03 22:01:47,613 - INFO - 127.0.0.1 - - [03/May/2025 22:01:47] "GET /api/stats HTTP/1.1" 200 -
+2025-05-03 22:06:36,355 - INFO -  * Detected change in 'D:\\KERJA\\Bantu Teman\\smartglass-ocr-api\\lib\\image_processing.py', reloading
+2025-05-03 22:06:37,227 - INFO -  * Restarting with stat
+2025-05-03 22:06:53,514 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-03 22:06:53,519 - WARNING - PaddleOCR not available
+2025-05-03 22:06:53,554 - INFO - Tesseract version: 5.5.0.20241111
+2025-05-03 22:06:53,554 - INFO - SmartGlassOCR v4.1.0 initialized
+2025-05-03 22:06:53,554 - INFO - Available OCR engines: ['tesseract', 'easyocr']
+2025-05-03 22:06:53,555 - INFO - Running in standard mode
+2025-05-03 22:06:53,556 - INFO - OCR Processor initialized successfully
+2025-05-03 22:06:53,573 - WARNING -  * Debugger is active!
+2025-05-03 22:06:53,584 - INFO -  * Debugger PIN: 409-810-023
+2025-05-03 22:06:56,219 - INFO - EasyOCR initialized successfully
+2025-05-03 22:08:35,125 - INFO -  * Detected change in 'D:\\KERJA\\Bantu Teman\\smartglass-ocr-api\\lib\\image_processing.py', reloading
+2025-05-03 22:08:35,916 - INFO -  * Restarting with stat
+2025-05-03 22:08:44,135 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-03 22:08:44,139 - WARNING - PaddleOCR not available
+2025-05-03 22:08:44,165 - INFO - Tesseract version: 5.5.0.20241111
+2025-05-03 22:08:44,165 - INFO - SmartGlassOCR v4.1.0 initialized
+2025-05-03 22:08:44,165 - INFO - Available OCR engines: ['tesseract', 'easyocr']
+2025-05-03 22:08:44,166 - INFO - Running in standard mode
+2025-05-03 22:08:44,167 - INFO - OCR Processor initialized successfully
+2025-05-03 22:08:44,187 - WARNING -  * Debugger is active!
+2025-05-03 22:08:44,198 - INFO -  * Debugger PIN: 409-810-023
+2025-05-03 22:08:46,359 - INFO - EasyOCR initialized successfully
+2025-05-03 22:13:36,813 - INFO -  * Detected change in 'D:\\KERJA\\Bantu Teman\\smartglass-ocr-api\\lib\\smartglass_ocr.py', reloading
+2025-05-03 22:13:37,932 - INFO -  * Restarting with stat
+2025-05-03 22:13:46,626 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-03 22:13:46,631 - WARNING - PaddleOCR not available
+2025-05-03 22:13:46,681 - INFO - Tesseract version: 5.5.0.20241111
+2025-05-03 22:13:46,682 - INFO - SmartGlassOCR v4.1.0 initialized
+2025-05-03 22:13:46,682 - INFO - Available OCR engines: ['tesseract', 'easyocr']
+2025-05-03 22:13:46,682 - INFO - Running in standard mode
+2025-05-03 22:13:46,683 - INFO - OCR Processor initialized successfully
+2025-05-03 22:13:46,702 - WARNING -  * Debugger is active!
+2025-05-03 22:13:46,712 - INFO -  * Debugger PIN: 409-810-023
+2025-05-03 22:13:49,481 - INFO - EasyOCR initialized successfully
+2025-05-03 22:14:21,230 - INFO -  * Detected change in 'D:\\KERJA\\Bantu Teman\\smartglass-ocr-api\\lib\\smartglass_ocr.py', reloading
+2025-05-03 22:14:21,999 - INFO -  * Restarting with stat
+2025-05-03 22:14:29,147 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-03 22:14:29,150 - WARNING - PaddleOCR not available
+2025-05-03 22:14:29,195 - INFO - Tesseract version: 5.5.0.20241111
+2025-05-03 22:14:29,195 - INFO - SmartGlassOCR v4.1.0 initialized
+2025-05-03 22:14:29,196 - INFO - Available OCR engines: ['tesseract', 'easyocr']
+2025-05-03 22:14:29,197 - INFO - Running in standard mode
+2025-05-03 22:14:29,199 - INFO - OCR Processor initialized successfully
+2025-05-03 22:14:29,225 - WARNING -  * Debugger is active!
+2025-05-03 22:14:29,236 - INFO -  * Debugger PIN: 409-810-023
+2025-05-03 22:14:31,975 - INFO - EasyOCR initialized successfully
+2025-05-03 22:14:32,275 - INFO -  * Detected change in 'D:\\KERJA\\Bantu Teman\\smartglass-ocr-api\\lib\\smartglass_ocr.py', reloading
+2025-05-03 22:14:32,880 - INFO -  * Restarting with stat
+2025-05-03 22:14:39,678 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-03 22:14:39,683 - WARNING - PaddleOCR not available
+2025-05-03 22:14:39,683 - ERROR - Failed to import required modules: cannot import name 'process_file' from 'lib.smartglass_ocr' (D:\KERJA\Bantu Teman\smartglass-ocr-api\lib\smartglass_ocr.py)
+2025-05-03 22:15:17,190 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-03 22:15:17,194 - WARNING - PaddleOCR not available
+2025-05-03 22:15:17,195 - ERROR - Failed to import required modules: cannot import name 'process_file' from 'lib.smartglass_ocr' (D:\KERJA\Bantu Teman\smartglass-ocr-api\lib\smartglass_ocr.py)
+2025-05-03 22:17:37,105 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-03 22:17:37,110 - WARNING - PaddleOCR not available
+2025-05-03 22:17:37,142 - INFO - Tesseract version: 5.5.0.20241111
+2025-05-03 22:17:37,142 - INFO - SmartGlassOCR v4.1.0 initialized
+2025-05-03 22:17:37,143 - INFO - Available OCR engines: ['tesseract', 'easyocr']
+2025-05-03 22:17:37,143 - INFO - Running in standard mode
+2025-05-03 22:17:37,145 - INFO - OCR Processor initialized successfully
+2025-05-03 22:17:37,195 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.8.192:5000
+2025-05-03 22:17:37,195 - INFO - [33mPress CTRL+C to quit[0m
+2025-05-03 22:17:37,198 - INFO -  * Restarting with stat
+2025-05-03 22:17:39,461 - INFO - EasyOCR initialized successfully
+2025-05-03 22:17:45,200 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-03 22:17:45,205 - WARNING - PaddleOCR not available
+2025-05-03 22:17:45,244 - INFO - Tesseract version: 5.5.0.20241111
+2025-05-03 22:17:45,245 - INFO - SmartGlassOCR v4.1.0 initialized
+2025-05-03 22:17:45,245 - INFO - Available OCR engines: ['tesseract', 'easyocr']
+2025-05-03 22:17:45,245 - INFO - Running in standard mode
+2025-05-03 22:17:45,247 - INFO - OCR Processor initialized successfully
+2025-05-03 22:17:45,266 - WARNING -  * Debugger is active!
+2025-05-03 22:17:45,278 - INFO -  * Debugger PIN: 409-810-023
+2025-05-03 22:17:46,168 - INFO - Detected handwritten content, switching to handwritten mode
+2025-05-03 22:17:46,168 - INFO - Processing file: Cuplikan layar 2025-04-25 112052.png
+2025-05-03 22:17:46,170 - INFO - Processing image: data/uploads\Cuplikan_layar_2025-04-25_112052_1746285466_dfc457ef.png
+2025-05-03 22:17:46,310 - INFO - Enhanced image analysis: handwritten, 1168x648, brightness: 247.5, contrast: 35.1, blur: 6170.2, table_likelihood: 46.48
+2025-05-03 22:17:46,310 - INFO - Using processing strategy: handwritten
+2025-05-03 22:17:46,374 - INFO - Glare detected, applying advanced glare reduction
+2025-05-03 22:17:48,274 - INFO - Tesseract version: 5.5.0.20241111
+2025-05-03 22:17:48,276 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-03 22:17:48,352 - INFO - EasyOCR initialized successfully
+2025-05-03 22:17:50,890 - INFO - EasyOCR initialized successfully
+2025-05-03 22:17:50,895 - WARNING - PaddleOCR not available
+2025-05-03 22:17:59,380 - ERROR - EasyOCR error: too many values to unpack (expected 3)
+2025-05-03 22:18:01,308 - INFO - New best Tesseract OCR result: gray, PSM 6, Confidence: 77.8, Length: 916, Words: 149
+2025-05-03 22:18:08,199 - INFO - New best Tesseract OCR result: bilateral, PSM 6, Confidence: 78.9, Length: 894, Words: 145
+2025-05-03 22:18:14,704 - INFO - New best Tesseract OCR result: contrast, PSM 6, Confidence: 75.4, Length: 897, Words: 142
+2025-05-03 22:18:22,023 - INFO - New best Tesseract OCR result: adaptive, PSM 6, Confidence: 74.7, Length: 923, Words: 149
+2025-05-03 22:18:56,068 - INFO - New best Tesseract OCR result: original, PSM 6, Confidence: 75.1, Length: 902, Words: 144
+2025-05-03 22:19:00,973 - ERROR - Error processing image: cannot import name 'post_process_text' from 'lib.text_processing' (D:\KERJA\Bantu Teman\smartglass-ocr-api\lib\text_processing.py)
+2025-05-03 22:19:00,974 - ERROR - Traceback (most recent call last):
+  File "D:\KERJA\Bantu Teman\smartglass-ocr-api\lib\smartglass_ocr.py", line 544, in _process_image
+    from .text_processing import post_process_text
+ImportError: cannot import name 'post_process_text' from 'lib.text_processing' (D:\KERJA\Bantu Teman\smartglass-ocr-api\lib\text_processing.py)
+
+2025-05-03 22:19:01,000 - ERROR - Error processing file: cannot import name 'organize_output' from 'lib.information_extraction' (D:\KERJA\Bantu Teman\smartglass-ocr-api\lib\information_extraction.py)
+2025-05-03 22:19:01,000 - ERROR - Traceback (most recent call last):
+  File "D:\KERJA\Bantu Teman\smartglass-ocr-api\lib\smartglass_ocr.py", line 909, in process_file
+    from .information_extraction import organize_output
+ImportError: cannot import name 'organize_output' from 'lib.information_extraction' (D:\KERJA\Bantu Teman\smartglass-ocr-api\lib\information_extraction.py)
+
+2025-05-03 22:19:01,002 - INFO - Markdown file saved: Cuplikanlayar2025-04-25112052_1746285541.md
+2025-05-03 22:19:01,002 - INFO - File processed in 74.83 seconds: Cuplikan layar 2025-04-25 112052.png
+2025-05-03 22:19:01,003 - INFO - 127.0.0.1 - - [03/May/2025 22:19:01] "POST /api/process HTTP/1.1" 200 -
+2025-05-03 22:19:23,563 - INFO - Processing file: contoh-8-surat-untuk-temanjpg-20230130030155.jpg
+2025-05-03 22:19:23,564 - INFO - Processing image: data/uploads\contoh-8-surat-untuk-temanjpg-20230130030155_1746285563_b75c91e1.jpg
+2025-05-03 22:19:23,629 - INFO - Enhanced image analysis: document, 712x508, brightness: 240.4, contrast: 48.9, blur: 6207.5, table_likelihood: 0.00
+2025-05-03 22:19:23,629 - INFO - Using processing strategy: document
+2025-05-03 22:19:24,045 - INFO - Glare detected, applying advanced glare reduction
+2025-05-03 22:19:24,108 - INFO - Tesseract version: 5.5.0.20241111
+2025-05-03 22:19:24,109 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-03 22:19:26,754 - INFO - EasyOCR initialized successfully
+2025-05-03 22:19:26,759 - WARNING - PaddleOCR not available
+2025-05-03 22:19:27,994 - INFO - New best Tesseract OCR result: gray, PSM 6, Confidence: 78.8, Length: 552, Words: 130
+2025-05-03 22:19:30,993 - INFO - New best Tesseract OCR result: gray, PSM 3, Confidence: 76.8, Length: 552, Words: 130
+2025-05-03 22:19:32,676 - INFO - New best Tesseract OCR result: gray, PSM 4, Confidence: 76.8, Length: 552, Words: 130
+2025-05-03 22:19:34,273 - INFO - New best Tesseract OCR result: contrast, PSM 6, Confidence: 79.6, Length: 552, Words: 130
+2025-05-03 22:19:38,326 - INFO - New best Tesseract OCR result: contrast, PSM 3, Confidence: 77.5, Length: 552, Words: 130
+2025-05-03 22:19:40,334 - INFO - New best Tesseract OCR result: contrast, PSM 4, Confidence: 77.5, Length: 552, Words: 130
+2025-05-03 22:19:41,667 - INFO - New best Tesseract OCR result: otsu, PSM 6, Confidence: 79.0, Length: 551, Words: 130
+2025-05-03 22:19:44,819 - INFO - New best Tesseract OCR result: otsu, PSM 3, Confidence: 77.0, Length: 551, Words: 130
+2025-05-03 22:19:46,130 - INFO - New best Tesseract OCR result: otsu, PSM 4, Confidence: 77.0, Length: 551, Words: 130
+2025-05-03 22:19:51,579 - INFO - New best Tesseract OCR result: denoised_otsu, PSM 6, Confidence: 79.0, Length: 551, Words: 130
+2025-05-03 22:19:54,086 - INFO - New best Tesseract OCR result: denoised_otsu, PSM 3, Confidence: 77.0, Length: 551, Words: 130
+2025-05-03 22:19:55,354 - INFO - New best Tesseract OCR result: denoised_otsu, PSM 4, Confidence: 77.0, Length: 551, Words: 130
+2025-05-03 22:19:56,622 - INFO - New best Tesseract OCR result: glare_reduced, PSM 6, Confidence: 79.6, Length: 552, Words: 130
+2025-05-03 22:19:59,219 - INFO - New best Tesseract OCR result: glare_reduced, PSM 3, Confidence: 77.5, Length: 552, Words: 130
+2025-05-03 22:20:00,586 - INFO - New best Tesseract OCR result: glare_reduced, PSM 4, Confidence: 77.5, Length: 552, Words: 130
+2025-05-03 22:20:01,844 - INFO - New best Tesseract OCR result: glare_otsu, PSM 6, Confidence: 79.0, Length: 551, Words: 130
+2025-05-03 22:20:04,605 - INFO - New best Tesseract OCR result: glare_otsu, PSM 3, Confidence: 77.0, Length: 551, Words: 130
+2025-05-03 22:20:05,975 - INFO - New best Tesseract OCR result: glare_otsu, PSM 4, Confidence: 77.0, Length: 551, Words: 130
+2025-05-03 22:20:07,336 - INFO - New best Tesseract OCR result: original, PSM 6, Confidence: 78.8, Length: 552, Words: 130
+2025-05-03 22:20:10,072 - INFO - New best Tesseract OCR result: original, PSM 3, Confidence: 76.8, Length: 552, Words: 130
+2025-05-03 22:20:11,438 - INFO - New best Tesseract OCR result: original, PSM 4, Confidence: 76.8, Length: 552, Words: 130
+2025-05-03 22:20:15,733 - ERROR - EasyOCR error: list index out of range
+2025-05-03 22:20:15,733 - ERROR - Error processing image: cannot import name 'post_process_text' from 'lib.text_processing' (D:\KERJA\Bantu Teman\smartglass-ocr-api\lib\text_processing.py)
+2025-05-03 22:20:15,733 - ERROR - Traceback (most recent call last):
+  File "D:\KERJA\Bantu Teman\smartglass-ocr-api\lib\smartglass_ocr.py", line 544, in _process_image
+    from .text_processing import post_process_text
+ImportError: cannot import name 'post_process_text' from 'lib.text_processing' (D:\KERJA\Bantu Teman\smartglass-ocr-api\lib\text_processing.py)
+
+2025-05-03 22:20:15,735 - ERROR - Error processing file: cannot import name 'organize_output' from 'lib.information_extraction' (D:\KERJA\Bantu Teman\smartglass-ocr-api\lib\information_extraction.py)
+2025-05-03 22:20:15,735 - ERROR - Traceback (most recent call last):
+  File "D:\KERJA\Bantu Teman\smartglass-ocr-api\lib\smartglass_ocr.py", line 909, in process_file
+    from .information_extraction import organize_output
+ImportError: cannot import name 'organize_output' from 'lib.information_extraction' (D:\KERJA\Bantu Teman\smartglass-ocr-api\lib\information_extraction.py)
+
+2025-05-03 22:20:15,737 - INFO - Markdown file saved: contoh-8-surat-untuk-temanjpg-20230130030155_1746285615.md
+2025-05-03 22:20:15,738 - INFO - File processed in 52.17 seconds: contoh-8-surat-untuk-temanjpg-20230130030155.jpg
+2025-05-03 22:20:15,738 - INFO - 127.0.0.1 - - [03/May/2025 22:20:15] "POST /api/process HTTP/1.1" 200 -
+2025-05-03 22:22:52,330 - INFO -  * Detected change in 'D:\\KERJA\\Bantu Teman\\smartglass-ocr-api\\lib\\information_extraction.py', reloading
+2025-05-03 22:22:53,263 - INFO -  * Restarting with stat
+2025-05-03 22:23:12,231 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-03 22:23:12,235 - WARNING - PaddleOCR not available
+2025-05-03 22:23:12,271 - INFO - Tesseract version: 5.5.0.20241111
+2025-05-03 22:23:12,273 - INFO - SmartGlassOCR v4.1.0 initialized
+2025-05-03 22:23:12,273 - INFO - Available OCR engines: ['tesseract', 'easyocr']
+2025-05-03 22:23:12,273 - INFO - Running in standard mode
+2025-05-03 22:23:12,275 - INFO - OCR Processor initialized successfully
+2025-05-03 22:23:12,293 - WARNING -  * Debugger is active!
+2025-05-03 22:23:12,304 - INFO -  * Debugger PIN: 409-810-023
+2025-05-03 22:23:14,629 - INFO - EasyOCR initialized successfully
