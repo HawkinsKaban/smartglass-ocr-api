@@ -324,3 +324,97 @@ KeyError: 'metadata'
 2025-05-03 20:38:52,194 - ERROR - Failed to import required modules: No module named 'lib.models'
 2025-05-03 21:21:30,520 - ERROR - Failed to import required modules: cannot import name 'generate_unique_filename' from 'lib.utils' (D:\KERJA\Bantu Teman\smartglass-ocr-api\lib\utils.py)
 2025-05-03 21:25:59,786 - ERROR - Failed to import required modules: cannot import name 'generate_unique_filename' from 'lib.utils' (D:\KERJA\Bantu Teman\smartglass-ocr-api\lib\utils.py)
+2025-05-03 21:34:05,725 - ERROR - Failed to import required modules: cannot import name 'generate_unique_filename' from 'lib.utils' (D:\KERJA\Bantu Teman\smartglass-ocr-api\lib\utils.py)
+2025-05-03 21:38:35,905 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-03 21:38:35,910 - WARNING - PaddleOCR not available
+2025-05-03 21:38:35,986 - INFO - Tesseract version: 5.5.0.20241111
+2025-05-03 21:38:35,987 - INFO - SmartGlassOCR v4.1.0 initialized
+2025-05-03 21:38:35,987 - INFO - Available OCR engines: ['tesseract', 'easyocr']
+2025-05-03 21:38:35,987 - INFO - Running in standard mode
+2025-05-03 21:38:35,989 - INFO - OCR Processor initialized successfully
+2025-05-03 21:38:36,063 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.8.192:5000
+2025-05-03 21:38:36,064 - INFO - [33mPress CTRL+C to quit[0m
+2025-05-03 21:38:36,066 - INFO -  * Restarting with stat
+2025-05-03 21:38:38,750 - INFO - EasyOCR initialized successfully
+2025-05-03 21:38:44,350 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-03 21:38:44,354 - WARNING - PaddleOCR not available
+2025-05-03 21:38:44,390 - INFO - Tesseract version: 5.5.0.20241111
+2025-05-03 21:38:44,390 - INFO - SmartGlassOCR v4.1.0 initialized
+2025-05-03 21:38:44,390 - INFO - Available OCR engines: ['tesseract', 'easyocr']
+2025-05-03 21:38:44,391 - INFO - Running in standard mode
+2025-05-03 21:38:44,393 - INFO - OCR Processor initialized successfully
+2025-05-03 21:38:44,413 - WARNING -  * Debugger is active!
+2025-05-03 21:38:44,424 - INFO -  * Debugger PIN: 409-810-023
+2025-05-03 21:38:46,826 - INFO - EasyOCR initialized successfully
+2025-05-03 21:39:01,093 - INFO - Processing file: Cuplikan layar 2025-04-23 172331.png
+2025-05-03 21:39:01,094 - INFO - Processing image: data/uploads\Cuplikan_layar_2025-04-23_172331_1746283141_ee568dea.png
+2025-05-03 21:39:01,208 - INFO - Enhanced image analysis: newspaper, 1662x512, brightness: 236.2, contrast: 54.9, blur: 11597.3, table_likelihood: 16.25
+2025-05-03 21:39:01,208 - ERROR - Error processing image: 'ImageProcessor' object has no attribute 'determine_processing_strategy'
+2025-05-03 21:39:01,208 - ERROR - Traceback (most recent call last):
+  File "D:\KERJA\Bantu Teman\smartglass-ocr-api\lib\smartglass_ocr.py", line 517, in _process_image
+    strategy = self.image_processor.determine_processing_strategy(image_stats)
+AttributeError: 'ImageProcessor' object has no attribute 'determine_processing_strategy'
+
+2025-05-03 21:39:01,209 - ERROR - Error processing file: 'metadata'
+2025-05-03 21:39:01,209 - ERROR - Traceback (most recent call last):
+  File "D:\KERJA\Bantu Teman\smartglass-ocr-api\lib\smartglass_ocr.py", line 366, in process_file
+    image_results["metadata"]["file_type"] = "image"
+KeyError: 'metadata'
+
+2025-05-03 21:39:01,212 - INFO - Markdown file saved: Cuplikanlayar2025-04-23172331_1746283141.md
+2025-05-03 21:39:01,212 - INFO - File processed in 0.12 seconds: Cuplikan layar 2025-04-23 172331.png
+2025-05-03 21:39:01,213 - INFO - 127.0.0.1 - - [03/May/2025 21:39:01] "POST /api/process HTTP/1.1" 200 -
+2025-05-03 21:39:15,131 - INFO - Processing file: Cuplikan layar 2025-03-23 113032.png
+2025-05-03 21:39:15,133 - INFO - Processing image: data/uploads\Cuplikan_layar_2025-03-23_113032_1746283155_e3fdf2fe.png
+2025-05-03 21:39:15,141 - INFO - Enhanced image analysis: document, 279x149, brightness: 236.7, contrast: 52.2, blur: 10583.6, table_likelihood: 43.91
+2025-05-03 21:39:15,141 - ERROR - Error processing image: 'ImageProcessor' object has no attribute 'determine_processing_strategy'
+2025-05-03 21:39:15,142 - ERROR - Traceback (most recent call last):
+  File "D:\KERJA\Bantu Teman\smartglass-ocr-api\lib\smartglass_ocr.py", line 517, in _process_image
+    strategy = self.image_processor.determine_processing_strategy(image_stats)
+AttributeError: 'ImageProcessor' object has no attribute 'determine_processing_strategy'
+
+2025-05-03 21:39:15,142 - ERROR - Error processing file: 'metadata'
+2025-05-03 21:39:15,143 - ERROR - Traceback (most recent call last):
+  File "D:\KERJA\Bantu Teman\smartglass-ocr-api\lib\smartglass_ocr.py", line 366, in process_file
+    image_results["metadata"]["file_type"] = "image"
+KeyError: 'metadata'
+
+2025-05-03 21:39:15,147 - INFO - Markdown file saved: Cuplikanlayar2025-03-23113032_1746283155.md
+2025-05-03 21:39:15,148 - INFO - File processed in 0.02 seconds: Cuplikan layar 2025-03-23 113032.png
+2025-05-03 21:39:15,151 - INFO - 127.0.0.1 - - [03/May/2025 21:39:15] "POST /api/process HTTP/1.1" 200 -
+2025-05-03 21:40:18,715 - INFO -  * Detected change in 'D:\\KERJA\\Bantu Teman\\smartglass-ocr-api\\lib\\image_processing.py', reloading
+2025-05-03 21:40:19,808 - INFO -  * Restarting with stat
+2025-05-03 21:40:28,256 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-03 21:40:28,261 - WARNING - PaddleOCR not available
+2025-05-03 21:40:28,296 - INFO - Tesseract version: 5.5.0.20241111
+2025-05-03 21:40:28,296 - INFO - SmartGlassOCR v4.1.0 initialized
+2025-05-03 21:40:28,296 - INFO - Available OCR engines: ['tesseract', 'easyocr']
+2025-05-03 21:40:28,298 - INFO - Running in standard mode
+2025-05-03 21:40:28,299 - INFO - OCR Processor initialized successfully
+2025-05-03 21:40:28,320 - WARNING -  * Debugger is active!
+2025-05-03 21:40:28,332 - INFO -  * Debugger PIN: 409-810-023
+2025-05-03 21:40:29,067 - INFO - Processing file: Cuplikan layar 2025-03-23 113032.png
+2025-05-03 21:40:29,068 - INFO - Processing image: data/uploads\Cuplikan_layar_2025-03-23_113032_1746283229_dd57665a.png
+2025-05-03 21:40:29,078 - INFO - Enhanced image analysis: document, 279x149, brightness: 236.7, contrast: 52.2, blur: 10583.6, table_likelihood: 43.91
+2025-05-03 21:40:29,078 - INFO - Using processing strategy: document
+2025-05-03 21:40:29,078 - ERROR - Error processing image: 'ImageProcessor' object has no attribute 'auto_rotate'
+2025-05-03 21:40:29,078 - ERROR - Traceback (most recent call last):
+  File "D:\KERJA\Bantu Teman\smartglass-ocr-api\lib\smartglass_ocr.py", line 522, in _process_image
+    image = self.image_processor.auto_rotate(image)
+AttributeError: 'ImageProcessor' object has no attribute 'auto_rotate'
+
+2025-05-03 21:40:29,079 - ERROR - Error processing file: 'metadata'
+2025-05-03 21:40:29,081 - ERROR - Traceback (most recent call last):
+  File "D:\KERJA\Bantu Teman\smartglass-ocr-api\lib\smartglass_ocr.py", line 366, in process_file
+    image_results["metadata"]["file_type"] = "image"
+KeyError: 'metadata'
+
+2025-05-03 21:40:29,083 - INFO - Markdown file saved: Cuplikanlayar2025-03-23113032_1746283229.md
+2025-05-03 21:40:29,083 - INFO - File processed in 0.02 seconds: Cuplikan layar 2025-03-23 113032.png
+2025-05-03 21:40:29,085 - INFO - 127.0.0.1 - - [03/May/2025 21:40:29] "POST /api/process HTTP/1.1" 200 -
+2025-05-03 21:40:30,975 - INFO - EasyOCR initialized successfully
+2025-05-03 21:40:38,676 - INFO - 127.0.0.1 - - [03/May/2025 21:40:38] "GET /api/ HTTP/1.1" 200 -
+2025-05-03 21:40:43,467 - INFO - 127.0.0.1 - - [03/May/2025 21:40:43] "GET /api/docs HTTP/1.1" 200 -

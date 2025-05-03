@@ -1377,3 +1377,51 @@ class ImageProcessor:
         _, strong_otsu = cv2.threshold(strong_contrast, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
         image_data["strong_otsu"] = strong_otsu
         processed_images.append("strong_otsu")
+
+
+    def determine_processing_strategy(self, image_stats):
+        """
+        Determine the best processing strategy based on image type and stats
+        
+        Args:
+            image_stats: ImageStats object with image characteristics
+            
+        Returns:
+            ProcessingStrategy enum for optimal processing
+        """
+        # Choose strategy based on image type
+        image_type = image_stats.image_type
+        
+        # Use special strategies for specific image types
+        if image_type == ImageType.DOCUMENT:
+            return ProcessingStrategy.DOCUMENT
+        elif image_type == ImageType.NATURAL:
+            return ProcessingStrategy.NATURAL
+        elif image_type == ImageType.RECEIPT:
+            return ProcessingStrategy.RECEIPT
+        elif image_type == ImageType.ID_CARD:
+            return ProcessingStrategy.ID_CARD
+        elif image_type == ImageType.HANDWRITTEN:
+            return ProcessingStrategy.HANDWRITTEN
+        elif image_type == ImageType.BOOK_PAGE:
+            return ProcessingStrategy.BOOK
+        elif image_type == ImageType.TABLE:
+            return ProcessingStrategy.TABLE
+        elif image_type == ImageType.SCIENTIFIC:
+            return ProcessingStrategy.SCIENTIFIC
+        elif image_type == ImageType.FORM:
+            return ProcessingStrategy.FORM
+        elif image_type == ImageType.NEWSPAPER:
+            return ProcessingStrategy.MULTI_COLUMN
+        
+        # For low quality images, use aggressive processing
+        if image_type == ImageType.LOW_QUALITY:
+            return ProcessingStrategy.AGGRESSIVE
+        
+        # Consider other image characteristics
+        if image_stats.image_type == ImageType.HIGH_CONTRAST:
+            # For high contrast images, minimal processing is often better
+            return ProcessingStrategy.MINIMAL
+        
+        # Default to standard processing
+        return ProcessingStrategy.STANDARD

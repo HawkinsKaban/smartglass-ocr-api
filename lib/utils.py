@@ -4,9 +4,12 @@
 Utility functions and classes for SmartGlassOCR
 """
 
+import os
 import time
+import uuid
 import logging
 import threading
+import re
 import numpy as np
 from typing import Dict, Any, List, Tuple, Optional, Union
 
@@ -197,3 +200,173 @@ def get_file_extension(file_path: str) -> str:
         File extension without dot
     """
     return file_path.split('.')[-1].lower() if '.' in file_path else ''
+
+# Added missing functions below:
+
+def generate_unique_filename(filename: str) -> str:
+    """
+    Generate a unique filename for storage
+    
+    Args:
+        filename: The original filename
+        
+    Returns:
+        A unique filename with timestamp and UUID
+    """
+    timestamp = int(time.time())
+    unique_id = uuid.uuid4().hex[:8]
+    # Use safe_filename instead of secure_filename since we're not importing werkzeug
+    secure_name = safe_filename(filename)
+    base, ext = os.path.splitext(secure_name)
+    return f"{base}_{timestamp}_{unique_id}{ext}"
+
+def get_available_libraries() -> Dict[str, bool]:
+    """
+    Check which OCR libraries are available in the system
+    
+    Returns:
+        Dictionary mapping library names to availability status
+    """
+    libraries = {
+        "cv2": False,
+        "PIL": False,
+        "pytesseract": False,
+        "pdf2image": False,
+        "nltk": False,
+        "easyocr": False,
+        "paddleocr": False
+    }
+    
+    # Check OpenCV
+    try:
+        import cv2
+        libraries["cv2"] = True
+    except ImportError:
+        pass
+    
+    # Check PIL
+    try:
+        from PIL import Image
+        libraries["PIL"] = True
+    except ImportError:
+        pass
+    
+    # Check Tesseract
+    try:
+        import pytesseract
+        libraries["pytesseract"] = True
+    except ImportError:
+        pass
+    
+    # Check PDF2Image
+    try:
+        import pdf2image
+        libraries["pdf2image"] = True
+    except ImportError:
+        pass
+    
+    # Check NLTK
+    try:
+        import nltk
+        libraries["nltk"] = True
+    except ImportError:
+        pass
+    
+    # Check EasyOCR
+    try:
+        import easyocr
+        libraries["easyocr"] = True
+    except ImportError:
+        pass
+    
+    # Check PaddleOCR
+    try:
+        from paddleocr import PaddleOCR
+        libraries["paddleocr"] = True
+    except ImportError:
+        pass
+    
+    return libraries
+
+def clean_text(text: str) -> str:
+    """
+    Clean and normalize OCR text results
+    
+    Args:
+        text: Raw OCR text
+        
+    Returns:
+        Cleaned text
+    """
+    if not text:
+        return ""
+    
+    # Remove invalid unicode characters
+    text = ''.join(c for c in text if ord(c) < 65536)
+    
+    # Fix common OCR errors
+    replacements = {
+        # Letter and number confusion
+        'l': '1',  # lowercase L to 1 when between numbers
+        'O': '0',  # capital O to 0 when between numbers
+        'I': '1',  # capital I to 1 when between numbers
+        
+        # Common word errors
+        'tbe': 'the',
+        'arid': 'and',
+        'rnay': 'may',
+        'Iine': 'line',
+        'tirne': 'time',
+    }
+    
+    # Apply replacements in context (only when between numbers)
+    for char, replacement in [('l', '1'), ('O', '0'), ('I', '1')]:
+        text = re.sub(f'(?<=\\d){char}(?=\\d)', replacement, text)
+    
+    # Replace error words (whole word only)
+    for error, correction in replacements.items():
+        if error not in ['l', 'O', 'I']:  # Skip the ones we did above
+            text = re.sub(f'\\b{error}\\b', correction, text)
+    
+    # Fix space issues
+    text = re.sub(r'(?<=[a-z])(?=[A-Z])', ' ', text)  # Add space between lowercase and uppercase
+    text = re.sub(r'\s+', ' ', text)  # Replace multiple spaces with single space
+    
+    # Fix newlines
+    text = re.sub(r'\n{3,}', '\n\n', text)  # Replace multiple newlines with double newline
+    
+    return text.strip()
+
+def order_points(pts):
+    """
+    Order points in a rectangle in top-left, top-right, bottom-right, bottom-left order
+    
+    Args:
+        pts: Array of points (4 points for a rectangle)
+        
+    Returns:
+        Ordered points
+    """
+    # Sort the points based on their x-coordinates
+    pts = pts.astype(np.float32)
+    x_sorted = pts[np.argsort(pts[:, 0]), :]
+    
+    # Grab the left-most and right-most points
+    left_most = x_sorted[:2, :]
+    right_most = x_sorted[2:, :]
+    
+    # Sort the left-most according to their y-coordinates
+    left_most = left_most[np.argsort(left_most[:, 1]), :]
+    (tl, bl) = left_most
+    
+    # Calculate the Euclidean distance from the top-left corner to the right-most points
+    # The point with the largest distance is the bottom-right corner
+    d = np.sqrt(((tl[0] - right_most[:, 0]) ** 2) + ((tl[1] - right_most[:, 1]) ** 2))
+    if len(d) > 0:
+        (br, tr) = right_most[np.argsort(d)[::-1], :]
+    else:
+        # Handle case with fewer than 4 points
+        (br, tr) = right_most, right_most
+    
+    # Return the coordinates in order: top-left, top-right, bottom-right, bottom-left
+    return np.array([tl, tr, br, bl], dtype=np.float32)
