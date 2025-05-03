@@ -11,7 +11,7 @@ import numpy as np
 import logging
 from typing import List, Dict, Tuple, Optional, Union, Any
 
-from .models import ImageType, ImageStats, ProcessingStrategy
+from .model import ImageType, ImageStats, ProcessingStrategy
 
 logger = logging.getLogger("SmartGlass-ImageProcessing")
 

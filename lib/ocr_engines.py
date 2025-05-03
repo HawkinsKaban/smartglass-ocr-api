@@ -12,7 +12,7 @@ import logging
 from typing import List, Dict, Tuple, Optional, Union, Any
 from PIL import Image
 
-from .models import ImageType
+from .model import ImageType
 
 logger = logging.getLogger("SmartGlass-OCREngines")
 

@@ -10,7 +10,7 @@ import logging
 import string
 from typing import List, Dict, Tuple, Optional, Union, Any
 
-from .models import ImageType, DocumentStructure
+from .model import ImageType, DocumentStructure
 
 logger = logging.getLogger("SmartGlass-TextProcessing")
 
