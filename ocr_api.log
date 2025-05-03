@@ -320,3 +320,5 @@ KeyError: 'metadata'
 2025-05-03 14:12:44,230 - INFO - Markdown file saved: Cuplikanlayar2025-04-23172331_1746256364.md
 2025-05-03 14:12:44,231 - INFO - File processed in 0.85 seconds: Cuplikan layar 2025-04-23 172331.png
 2025-05-03 14:12:44,232 - INFO - 127.0.0.1 - - [03/May/2025 14:12:44] "POST /api/process HTTP/1.1" 200 -
+2025-05-03 15:22:36,285 - ERROR - Failed to import required modules: No module named 'lib.models'
+2025-05-03 20:38:52,194 - ERROR - Failed to import required modules: No module named 'lib.models'

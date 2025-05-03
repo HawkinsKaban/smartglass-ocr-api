@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Models and Enums for SmartGlassOCR
-Defines data structures and constants used throughout the system
+Data models and enums for SmartGlassOCR
 """
 
 from enum import Enum
 from dataclasses import dataclass
+from typing import List, Dict, Tuple, Optional, Union, Any, Set
 
 # Define image type classification with enhanced specificity
 class ImageType(Enum):
@@ -38,7 +38,7 @@ class ImageStats:
     text_regions: int  # Number of potential text regions
     aspect_ratio: float
     image_type: ImageType
-    # Added metrics for better image analysis
+    # Added new metrics for better image analysis
     table_likelihood: float = 0.0
     form_likelihood: float = 0.0
     color_variance: float = 0.0
@@ -73,3 +73,29 @@ class DocumentStructure(Enum):
     MULTI_COLUMN = "multi_column"   # Multi-column layout
     SCIENTIFIC = "scientific"       # Scientific with formulas
     MIXED = "mixed"                 # Mixed structure types
+
+@dataclass
+class TextRegion:
+    """Represents a region of text in an image"""
+    x: int
+    y: int
+    width: int
+    height: int
+    text: str = ""
+    confidence: float = 0.0
+    type: str = "text"  # Can be "text", "title", "header", "list_item", etc.
+
+@dataclass
+class OCRResult:
+    """Structured representation of OCR results"""
+    text: str
+    confidence: float
+    engine: str
+    regions: List[TextRegion] = None
+    layout_info: Dict[str, Any] = None
+    
+    def __post_init__(self):
+        if self.regions is None:
+            self.regions = []
+        if self.layout_info is None:
+            self.layout_info = {}

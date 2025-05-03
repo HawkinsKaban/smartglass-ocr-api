@@ -2,17 +2,13 @@
 # -*- coding: utf-8 -*-
 """
 Utility functions and classes for SmartGlassOCR
-Includes memory management, file handling, and other helper functions
 """
 
-import os
 import time
+import logging
 import threading
 import numpy as np
-import logging
-import uuid
-import re
-from pathlib import Path
+from typing import Dict, Any, List, Tuple, Optional, Union
 
 logger = logging.getLogger("SmartGlass-Utils")
 
@@ -80,140 +76,124 @@ class MemoryManager:
             self.cache.clear()
             self.current_usage = 0
 
-def generate_unique_filename(base_path, extension=".jpg"):
-    """Generate a unique filename with timestamp and UUID"""
-    timestamp = int(time.time())
-    unique_id = uuid.uuid4().hex[:8]
-    filename = f"{Path(base_path).stem}_{timestamp}_{unique_id}{extension}"
+def calculate_hash(image):
+    """
+    Calculate a hash for an image to use as cache key
+    
+    Args:
+        image: Image data as numpy array
+        
+    Returns:
+        Hash value as string
+    """
+    if not isinstance(image, np.ndarray):
+        return None
+    
+    # Simple hash based on image shape and a sample of pixels
+    try:
+        shape_hash = hash(image.shape)
+        
+        # Get a downsampled version of the image for hashing
+        height, width = image.shape[:2]
+        sample_factor = max(1, min(width, height) // 50)  # Downsample to roughly 50x50 or less
+        
+        if len(image.shape) > 2:  # Color image
+            sample = image[::sample_factor, ::sample_factor, 0].flatten()  # Use first channel
+        else:  # Grayscale
+            sample = image[::sample_factor, ::sample_factor].flatten()
+        
+        # Calculate hash from sampled data
+        data_hash = hash(tuple(sample[::max(1, len(sample)//100)]))  # Further reduce to ~100 values
+        
+        return f"{shape_hash}_{data_hash}"
+    except Exception as e:
+        logger.warning(f"Error calculating image hash: {e}")
+        return None
+
+def is_valid_language(language_code: str) -> bool:
+    """
+    Check if a language code is valid
+    
+    Args:
+        language_code: Language code to check
+        
+    Returns:
+        True if valid, False otherwise
+    """
+    # List of supported language codes in Tesseract
+    # This is a subset of the most common ones
+    valid_codes = {
+        "eng", "ind", "ara", "bul", "cat", "ces", "chi_sim", "chi_tra", 
+        "dan", "deu", "ell", "fin", "fra", "glg", "heb", "hin", "hun", 
+        "ita", "jpn", "kor", "nld", "nor", "pol", "por", "ron", "rus", 
+        "spa", "swe", "tha", "tur", "ukr", "vie"
+    }
+    
+    # Check if it's a simple code
+    if language_code in valid_codes:
+        return True
+    
+    # Check if it's a compound code (e.g., eng+fra)
+    if "+" in language_code:
+        parts = language_code.split("+")
+        return all(part in valid_codes for part in parts)
+    
+    return False
+
+def format_confidence(confidence: float) -> str:
+    """
+    Format confidence score for display
+    
+    Args:
+        confidence: Confidence score (0-100)
+        
+    Returns:
+        Formatted confidence string
+    """
+    if confidence >= 90:
+        return f"Very High ({confidence:.1f}%)"
+    elif confidence >= 75:
+        return f"High ({confidence:.1f}%)"
+    elif confidence >= 60:
+        return f"Good ({confidence:.1f}%)"
+    elif confidence >= 40:
+        return f"Moderate ({confidence:.1f}%)"
+    elif confidence >= 20:
+        return f"Low ({confidence:.1f}%)"
+    else:
+        return f"Very Low ({confidence:.1f}%)"
+
+def safe_filename(filename: str) -> str:
+    """
+    Make a filename safe for all operating systems
+    
+    Args:
+        filename: Original filename
+        
+    Returns:
+        Safe filename
+    """
+    # Replace unsafe characters
+    unsafe_chars = '<>:"/\\|?*'
+    for char in unsafe_chars:
+        filename = filename.replace(char, '_')
+    
+    # Ensure it's not too long
+    if len(filename) > 255:
+        name, ext = filename.rsplit('.', 1) if '.' in filename else (filename, '')
+        name = name[:255 - len(ext) - 1]
+        filename = f"{name}.{ext}" if ext else name
+    
     return filename
 
-def get_available_libraries():
-    """Check which libraries are available in the environment"""
-    libraries = {}
-    
-    # Check for OpenCV
-    try:
-        import cv2
-        libraries["cv2"] = True
-    except ImportError:
-        libraries["cv2"] = False
-    
-    # Check for PIL
-    try:
-        from PIL import Image
-        libraries["pil"] = True
-    except ImportError:
-        libraries["pil"] = False
-    
-    # Check for Tesseract
-    try:
-        import pytesseract
-        libraries["tesseract"] = True
-    except ImportError:
-        libraries["tesseract"] = False
-    
-    # Check for PDF processing
-    try:
-        from pdf2image import convert_from_path
-        libraries["pdf2image"] = True
-    except ImportError:
-        libraries["pdf2image"] = False
-    
-    # Check for NLP libraries
-    try:
-        import nltk
-        libraries["nltk"] = True
-        
-        # Check NLTK resources
-        try:
-            nltk.data.find('tokenizers/punkt')
-            libraries["nltk_punkt"] = True
-        except LookupError:
-            libraries["nltk_punkt"] = False
-            
-        try:
-            nltk.data.find('corpora/stopwords')
-            libraries["nltk_stopwords"] = True
-        except LookupError:
-            libraries["nltk_stopwords"] = False
-            
-    except ImportError:
-        libraries["nltk"] = False
-        libraries["nltk_punkt"] = False
-        libraries["nltk_stopwords"] = False
-    
-    # Check for EasyOCR
-    try:
-        import easyocr
-        libraries["easyocr"] = True
-    except ImportError:
-        libraries["easyocr"] = False
-    
-    # Check for PaddleOCR
-    try:
-        from paddleocr import PaddleOCR
-        libraries["paddleocr"] = True
-    except ImportError:
-        libraries["paddleocr"] = False
-    
-    return libraries
-
-def clean_text(text, keep_newlines=True):
+def get_file_extension(file_path: str) -> str:
     """
-    Clean text by removing unwanted characters and normalizing whitespace
+    Get the file extension in lowercase
     
     Args:
-        text: Text to clean
-        keep_newlines: Whether to preserve newlines
+        file_path: Path to the file
         
     Returns:
-        Cleaned text
+        File extension without dot
     """
-    if not text:
-        return ""
-    
-    # Remove invalid unicode characters
-    text = ''.join(c for c in text if ord(c) < 65536)
-    
-    # Replace multiple spaces with single space
-    text = re.sub(r' +', ' ', text)
-    
-    # Handle newlines based on parameter
-    if keep_newlines:
-        # Replace multiple newlines with double newlines
-        text = re.sub(r'\n{3,}', '\n\n', text)
-    else:
-        # Replace newlines with spaces
-        text = re.sub(r'\n', ' ', text)
-        # Replace multiple spaces with single space
-        text = re.sub(r' +', ' ', text)
-    
-    return text.strip()
-
-def order_points(pts):
-    """
-    Order points for perspective transform
-    
-    Args:
-        pts: Array of 4 points
-        
-    Returns:
-        Ordered points [top-left, top-right, bottom-right, bottom-left]
-    """
-    # Convert to numpy array if not already
-    pts = np.array(pts, dtype=np.float32)
-    
-    # Initialize ordered points
-    rect = np.zeros((4, 2), dtype=np.float32)
-    
-    # Sum of coordinates
-    s = pts.sum(axis=1)
-    rect[0] = pts[np.argmin(s)]  # Top-left has smallest sum
-    rect[2] = pts[np.argmax(s)]  # Bottom-right has largest sum
-    
-    # Difference of coordinates
-    diff = np.diff(pts, axis=1)
-    rect[1] = pts[np.argmin(diff)]  # Top-right has smallest difference
-    rect[3] = pts[np.argmax(diff)]  # Bottom-left has largest difference
-    
-    return rect
+    return file_path.split('.')[-1].lower() if '.' in file_path else ''
