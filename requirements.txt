@@ -16,3 +16,5 @@ transformers
 torch
 PyPDF2
 poppler-utils
+paddlepaddle
+paddleocr

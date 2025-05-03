@@ -1,31 +1,60 @@
-# Python virtual environment
-venv/
-env/
-.venv/
-.env/
-virtualenv/
-
-# Python cache files
+# Python bytecode
 __pycache__/
 *.py[cod]
-*.class
+*$py.class
 
-# IDE and editor files
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# OS files
-.DS_Store
-Thumbs.db
-
-# Environment variables
-.env
-
-# Python package files
+# Distribution / packaging
+dist/
+build/
 *.egg-info/
 
-# Build directories
-build/
-dist/
+# Virtual environments
+venv/
+env/
+ENV/
+.env
+
+# IDE files
+.idea/
+.vscode/
+*.sublime-*
+
+# Logs
+*.log
+logs/
+
+# Data directories
+data/
+data/uploads/
+data/processed/
+data/temp/
+
+# Output files
+*.md
+!README.md
+*.txt
+*.json
+
+# Model files (could be large)
+*.pth
+*.onnx
+*.bin
+*.h5
+
+# Environment-specific files
+.env
+.env.local
+.env.*.local
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Linux
+*~

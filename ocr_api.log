@@ -1055,3 +1055,406 @@ ImportError: cannot import name 'post_process_text' from 'lib.text_processing' (
 2025-05-03 22:51:44,771 - INFO - Markdown file saved: contoh-8-surat-untuk-temanjpg-20230130030155_1746287504.md
 2025-05-03 22:51:44,772 - INFO - File processed in 48.46 seconds: contoh-8-surat-untuk-temanjpg-20230130030155.jpg
 2025-05-03 22:51:44,773 - INFO - 127.0.0.1 - - [03/May/2025 22:51:44] "POST /api/process HTTP/1.1" 200 -
+2025-05-03 22:52:45,021 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-03 22:52:45,026 - WARNING - PaddleOCR not available
+2025-05-03 22:52:45,060 - INFO - Tesseract version: 5.5.0.20241111
+2025-05-03 22:52:45,061 - INFO - SmartGlassOCR v4.1.0 initialized
+2025-05-03 22:52:45,061 - INFO - Available OCR engines: ['tesseract', 'easyocr']
+2025-05-03 22:52:45,061 - INFO - Running in standard mode
+2025-05-03 22:52:45,063 - INFO - OCR Processor initialized successfully
+2025-05-03 22:52:45,109 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.8.192:5000
+2025-05-03 22:52:45,109 - INFO - [33mPress CTRL+C to quit[0m
+2025-05-03 22:52:45,112 - INFO -  * Restarting with stat
+2025-05-03 22:52:48,093 - INFO - EasyOCR initialized successfully
+2025-05-03 22:52:54,568 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-03 22:52:54,574 - WARNING - PaddleOCR not available
+2025-05-03 22:52:54,609 - INFO - Tesseract version: 5.5.0.20241111
+2025-05-03 22:52:54,609 - INFO - SmartGlassOCR v4.1.0 initialized
+2025-05-03 22:52:54,609 - INFO - Available OCR engines: ['tesseract', 'easyocr']
+2025-05-03 22:52:54,610 - INFO - Running in standard mode
+2025-05-03 22:52:54,612 - INFO - OCR Processor initialized successfully
+2025-05-03 22:52:54,632 - WARNING -  * Debugger is active!
+2025-05-03 22:52:54,647 - INFO -  * Debugger PIN: 409-810-023
+2025-05-03 22:52:57,016 - INFO - EasyOCR initialized successfully
+2025-05-03 22:53:01,629 - INFO - Processing file: contoh-8-surat-untuk-temanjpg-20230130030155.jpg
+2025-05-03 22:53:01,630 - INFO - Processing image: data/uploads\contoh-8-surat-untuk-temanjpg-20230130030155_1746287581_850fd3a0.jpg
+2025-05-03 22:53:01,710 - INFO - Enhanced image analysis: document, 712x508, brightness: 240.4, contrast: 48.9, blur: 6207.5, table_likelihood: 0.00
+2025-05-03 22:53:01,710 - INFO - Using processing strategy: document
+2025-05-03 22:53:02,051 - INFO - Glare detected, applying advanced glare reduction
+2025-05-03 22:53:02,114 - INFO - Tesseract version: 5.5.0.20241111
+2025-05-03 22:53:02,115 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-03 22:53:05,028 - INFO - EasyOCR initialized successfully
+2025-05-03 22:53:05,033 - WARNING - PaddleOCR not available
+2025-05-03 22:53:07,286 - INFO - New best Tesseract OCR result: gray, PSM 6, Confidence: 78.8, Length: 552, Words: 130
+2025-05-03 22:53:10,315 - INFO - New best Tesseract OCR result: gray, PSM 3, Confidence: 76.8, Length: 552, Words: 130
+2025-05-03 22:53:11,678 - INFO - New best Tesseract OCR result: gray, PSM 4, Confidence: 76.8, Length: 552, Words: 130
+2025-05-03 22:53:13,246 - INFO - New best Tesseract OCR result: contrast, PSM 6, Confidence: 79.6, Length: 552, Words: 130
+2025-05-03 22:53:15,933 - INFO - New best Tesseract OCR result: contrast, PSM 3, Confidence: 77.5, Length: 552, Words: 130
+2025-05-03 22:53:17,233 - INFO - New best Tesseract OCR result: contrast, PSM 4, Confidence: 77.5, Length: 552, Words: 130
+2025-05-03 22:53:18,637 - INFO - New best Tesseract OCR result: otsu, PSM 6, Confidence: 79.0, Length: 551, Words: 130
+2025-05-03 22:53:21,536 - INFO - New best Tesseract OCR result: otsu, PSM 3, Confidence: 77.0, Length: 551, Words: 130
+2025-05-03 22:53:23,311 - INFO - New best Tesseract OCR result: otsu, PSM 4, Confidence: 77.0, Length: 551, Words: 130
+2025-05-03 22:53:28,894 - INFO - New best Tesseract OCR result: denoised_otsu, PSM 6, Confidence: 79.0, Length: 551, Words: 130
+2025-05-03 22:53:31,369 - INFO - New best Tesseract OCR result: denoised_otsu, PSM 3, Confidence: 77.0, Length: 551, Words: 130
+2025-05-03 22:53:32,730 - INFO - New best Tesseract OCR result: denoised_otsu, PSM 4, Confidence: 77.0, Length: 551, Words: 130
+2025-05-03 22:53:33,935 - INFO - New best Tesseract OCR result: glare_reduced, PSM 6, Confidence: 79.6, Length: 552, Words: 130
+2025-05-03 22:53:36,801 - INFO - New best Tesseract OCR result: glare_reduced, PSM 3, Confidence: 77.5, Length: 552, Words: 130
+2025-05-03 22:53:38,126 - INFO - New best Tesseract OCR result: glare_reduced, PSM 4, Confidence: 77.5, Length: 552, Words: 130
+2025-05-03 22:53:39,525 - INFO - New best Tesseract OCR result: glare_otsu, PSM 6, Confidence: 79.0, Length: 551, Words: 130
+2025-05-03 22:53:41,807 - INFO - New best Tesseract OCR result: glare_otsu, PSM 3, Confidence: 77.0, Length: 551, Words: 130
+2025-05-03 22:53:42,972 - INFO - New best Tesseract OCR result: glare_otsu, PSM 4, Confidence: 77.0, Length: 551, Words: 130
+2025-05-03 22:53:44,201 - INFO - New best Tesseract OCR result: original, PSM 6, Confidence: 78.8, Length: 552, Words: 130
+2025-05-03 22:53:46,729 - INFO - New best Tesseract OCR result: original, PSM 3, Confidence: 76.8, Length: 552, Words: 130
+2025-05-03 22:53:48,031 - INFO - New best Tesseract OCR result: original, PSM 4, Confidence: 76.8, Length: 552, Words: 130
+2025-05-03 22:53:52,009 - ERROR - EasyOCR error: list index out of range
+2025-05-03 22:53:52,016 - ERROR - Error processing image: cannot import name 'post_process_text' from 'lib.text_processing' (D:\KERJA\Bantu Teman\smartglass-ocr-api\lib\text_processing.py)
+2025-05-03 22:53:52,017 - ERROR - Traceback (most recent call last):
+  File "D:\KERJA\Bantu Teman\smartglass-ocr-api\lib\smartglass_ocr.py", line 544, in _process_image
+    from .text_processing import post_process_text
+ImportError: cannot import name 'post_process_text' from 'lib.text_processing' (D:\KERJA\Bantu Teman\smartglass-ocr-api\lib\text_processing.py)
+
+2025-05-03 22:53:52,021 - INFO - Markdown file saved: contoh-8-surat-untuk-temanjpg-20230130030155_1746287632.md
+2025-05-03 22:53:52,021 - INFO - File processed in 50.39 seconds: contoh-8-surat-untuk-temanjpg-20230130030155.jpg
+2025-05-03 22:53:52,022 - INFO - 127.0.0.1 - - [03/May/2025 22:53:52] "POST /api/process HTTP/1.1" 200 -
+2025-05-03 22:54:22,009 - INFO - 127.0.0.1 - - [03/May/2025 22:54:22] "GET /api/ HTTP/1.1" 200 -
+2025-05-03 23:10:50,824 - INFO -  * Detected change in 'D:\\KERJA\\Bantu Teman\\smartglass-ocr-api\\lib\\text_processing.py', reloading
+2025-05-03 23:10:52,301 - INFO -  * Restarting with stat
+2025-05-03 23:11:22,249 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-03 23:11:22,254 - WARNING - PaddleOCR not available
+2025-05-03 23:11:22,316 - INFO - Tesseract version: 5.5.0.20241111
+2025-05-03 23:11:22,316 - INFO - SmartGlassOCR v4.1.0 initialized
+2025-05-03 23:11:22,316 - INFO - Available OCR engines: ['tesseract', 'easyocr']
+2025-05-03 23:11:22,317 - INFO - Running in standard mode
+2025-05-03 23:11:22,319 - INFO - OCR Processor initialized successfully
+2025-05-03 23:11:22,408 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.8.192:5000
+2025-05-03 23:11:22,409 - INFO - [33mPress CTRL+C to quit[0m
+2025-05-03 23:11:22,413 - INFO -  * Restarting with stat
+2025-05-03 23:11:25,445 - INFO - EasyOCR initialized successfully
+2025-05-03 23:11:30,905 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-03 23:11:30,910 - WARNING - PaddleOCR not available
+2025-05-03 23:11:30,948 - INFO - Tesseract version: 5.5.0.20241111
+2025-05-03 23:11:30,948 - INFO - SmartGlassOCR v4.1.0 initialized
+2025-05-03 23:11:30,948 - INFO - Available OCR engines: ['tesseract', 'easyocr']
+2025-05-03 23:11:30,949 - INFO - Running in standard mode
+2025-05-03 23:11:30,950 - INFO - OCR Processor initialized successfully
+2025-05-03 23:11:30,969 - WARNING -  * Debugger is active!
+2025-05-03 23:11:30,983 - INFO -  * Debugger PIN: 409-810-023
+2025-05-03 23:11:33,973 - INFO - EasyOCR initialized successfully
+2025-05-03 23:11:41,116 - INFO - Processing file: contoh-8-surat-untuk-temanjpg-20230130030155.jpg
+2025-05-03 23:11:41,117 - INFO - Processing image: data/uploads\contoh-8-surat-untuk-temanjpg-20230130030155_1746288701_f9e22860.jpg
+2025-05-03 23:11:41,204 - INFO - Enhanced image analysis: document, 712x508, brightness: 240.4, contrast: 48.9, blur: 6207.5, table_likelihood: 0.00
+2025-05-03 23:11:41,205 - INFO - Using processing strategy: document
+2025-05-03 23:11:41,584 - INFO - Glare detected, applying advanced glare reduction
+2025-05-03 23:11:41,690 - INFO - Tesseract version: 5.5.0.20241111
+2025-05-03 23:11:41,693 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-03 23:11:44,354 - INFO - EasyOCR initialized successfully
+2025-05-03 23:11:44,359 - WARNING - PaddleOCR not available
+2025-05-03 23:11:45,741 - INFO - New best Tesseract OCR result: gray, PSM 6, Confidence: 78.8, Length: 552, Words: 130
+2025-05-03 23:11:48,192 - INFO - New best Tesseract OCR result: gray, PSM 3, Confidence: 76.8, Length: 552, Words: 130
+2025-05-03 23:11:49,291 - INFO - New best Tesseract OCR result: gray, PSM 4, Confidence: 76.8, Length: 552, Words: 130
+2025-05-03 23:11:50,473 - INFO - New best Tesseract OCR result: contrast, PSM 6, Confidence: 79.6, Length: 552, Words: 130
+2025-05-03 23:11:52,807 - INFO - New best Tesseract OCR result: contrast, PSM 3, Confidence: 77.5, Length: 552, Words: 130
+2025-05-03 23:11:53,955 - INFO - New best Tesseract OCR result: contrast, PSM 4, Confidence: 77.5, Length: 552, Words: 130
+2025-05-03 23:11:55,093 - INFO - New best Tesseract OCR result: otsu, PSM 6, Confidence: 79.0, Length: 551, Words: 130
+2025-05-03 23:11:57,327 - INFO - New best Tesseract OCR result: otsu, PSM 3, Confidence: 77.0, Length: 551, Words: 130
+2025-05-03 23:11:58,424 - INFO - New best Tesseract OCR result: otsu, PSM 4, Confidence: 77.0, Length: 551, Words: 130
+2025-05-03 23:12:03,426 - INFO - New best Tesseract OCR result: denoised_otsu, PSM 6, Confidence: 79.0, Length: 551, Words: 130
+2025-05-03 23:12:05,808 - INFO - New best Tesseract OCR result: denoised_otsu, PSM 3, Confidence: 77.0, Length: 551, Words: 130
+2025-05-03 23:12:06,894 - INFO - New best Tesseract OCR result: denoised_otsu, PSM 4, Confidence: 77.0, Length: 551, Words: 130
+2025-05-03 23:12:08,051 - INFO - New best Tesseract OCR result: glare_reduced, PSM 6, Confidence: 79.6, Length: 552, Words: 130
+2025-05-03 23:12:10,463 - INFO - New best Tesseract OCR result: glare_reduced, PSM 3, Confidence: 77.5, Length: 552, Words: 130
+2025-05-03 23:12:11,632 - INFO - New best Tesseract OCR result: glare_reduced, PSM 4, Confidence: 77.5, Length: 552, Words: 130
+2025-05-03 23:12:12,703 - INFO - New best Tesseract OCR result: glare_otsu, PSM 6, Confidence: 79.0, Length: 551, Words: 130
+2025-05-03 23:12:14,913 - INFO - New best Tesseract OCR result: glare_otsu, PSM 3, Confidence: 77.0, Length: 551, Words: 130
+2025-05-03 23:12:16,019 - INFO - New best Tesseract OCR result: glare_otsu, PSM 4, Confidence: 77.0, Length: 551, Words: 130
+2025-05-03 23:12:17,188 - INFO - New best Tesseract OCR result: original, PSM 6, Confidence: 78.8, Length: 552, Words: 130
+2025-05-03 23:12:19,560 - INFO - New best Tesseract OCR result: original, PSM 3, Confidence: 76.8, Length: 552, Words: 130
+2025-05-03 23:12:20,783 - INFO - New best Tesseract OCR result: original, PSM 4, Confidence: 76.8, Length: 552, Words: 130
+2025-05-03 23:12:24,767 - ERROR - EasyOCR error: list index out of range
+2025-05-03 23:12:24,815 - ERROR - Error processing image: cannot import name 'post_process_text' from 'lib.text_processing' (D:\KERJA\Bantu Teman\smartglass-ocr-api\lib\text_processing.py)
+2025-05-03 23:12:24,815 - ERROR - Traceback (most recent call last):
+  File "D:\KERJA\Bantu Teman\smartglass-ocr-api\lib\smartglass_ocr.py", line 544, in _process_image
+    from .text_processing import post_process_text
+ImportError: cannot import name 'post_process_text' from 'lib.text_processing' (D:\KERJA\Bantu Teman\smartglass-ocr-api\lib\text_processing.py)
+
+2025-05-03 23:12:24,819 - INFO - Markdown file saved: contoh-8-surat-untuk-temanjpg-20230130030155_1746288744.md
+2025-05-03 23:12:24,820 - INFO - File processed in 43.70 seconds: contoh-8-surat-untuk-temanjpg-20230130030155.jpg
+2025-05-03 23:12:24,821 - INFO - 127.0.0.1 - - [03/May/2025 23:12:24] "POST /api/process HTTP/1.1" 200 -
+2025-05-03 23:13:42,941 - INFO -  * Detected change in 'D:\\KERJA\\Bantu Teman\\smartglass-ocr-api\\lib\\text_processing.py', reloading
+2025-05-03 23:13:44,057 - INFO -  * Restarting with stat
+2025-05-03 23:13:52,014 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-03 23:13:52,018 - WARNING - PaddleOCR not available
+2025-05-03 23:13:52,050 - INFO - Tesseract version: 5.5.0.20241111
+2025-05-03 23:13:52,050 - INFO - SmartGlassOCR v4.1.0 initialized
+2025-05-03 23:13:52,050 - INFO - Available OCR engines: ['tesseract', 'easyocr']
+2025-05-03 23:13:52,051 - INFO - Running in standard mode
+2025-05-03 23:13:52,052 - INFO - OCR Processor initialized successfully
+2025-05-03 23:13:52,070 - WARNING -  * Debugger is active!
+2025-05-03 23:13:52,080 - INFO -  * Debugger PIN: 409-810-023
+2025-05-03 23:13:54,421 - INFO - EasyOCR initialized successfully
+2025-05-03 23:14:19,770 - INFO - Processing file: contoh-8-surat-untuk-temanjpg-20230130030155.jpg
+2025-05-03 23:14:19,772 - INFO - Processing image: data/uploads\contoh-8-surat-untuk-temanjpg-20230130030155_1746288859_9357a6c4.jpg
+2025-05-03 23:14:19,840 - INFO - Enhanced image analysis: document, 712x508, brightness: 240.4, contrast: 48.9, blur: 6207.5, table_likelihood: 0.00
+2025-05-03 23:14:19,840 - INFO - Using processing strategy: document
+2025-05-03 23:14:20,257 - INFO - Glare detected, applying advanced glare reduction
+2025-05-03 23:14:20,315 - INFO - Tesseract version: 5.5.0.20241111
+2025-05-03 23:14:20,317 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-03 23:14:23,544 - INFO - EasyOCR initialized successfully
+2025-05-03 23:14:23,551 - WARNING - PaddleOCR not available
+2025-05-03 23:14:25,638 - INFO - New best Tesseract OCR result: gray, PSM 6, Confidence: 78.8, Length: 552, Words: 130
+2025-05-03 23:14:28,263 - INFO - New best Tesseract OCR result: gray, PSM 3, Confidence: 76.8, Length: 552, Words: 130
+2025-05-03 23:14:29,424 - INFO - New best Tesseract OCR result: gray, PSM 4, Confidence: 76.8, Length: 552, Words: 130
+2025-05-03 23:14:30,685 - INFO - New best Tesseract OCR result: contrast, PSM 6, Confidence: 79.6, Length: 552, Words: 130
+2025-05-03 23:14:33,160 - INFO - New best Tesseract OCR result: contrast, PSM 3, Confidence: 77.5, Length: 552, Words: 130
+2025-05-03 23:14:34,339 - INFO - New best Tesseract OCR result: contrast, PSM 4, Confidence: 77.5, Length: 552, Words: 130
+2025-05-03 23:14:35,488 - INFO - New best Tesseract OCR result: otsu, PSM 6, Confidence: 79.0, Length: 551, Words: 130
+2025-05-03 23:14:37,799 - INFO - New best Tesseract OCR result: otsu, PSM 3, Confidence: 77.0, Length: 551, Words: 130
+2025-05-03 23:14:38,944 - INFO - New best Tesseract OCR result: otsu, PSM 4, Confidence: 77.0, Length: 551, Words: 130
+2025-05-03 23:14:43,792 - INFO - New best Tesseract OCR result: denoised_otsu, PSM 6, Confidence: 79.0, Length: 551, Words: 130
+2025-05-03 23:14:46,170 - INFO - New best Tesseract OCR result: denoised_otsu, PSM 3, Confidence: 77.0, Length: 551, Words: 130
+2025-05-03 23:14:47,326 - INFO - New best Tesseract OCR result: denoised_otsu, PSM 4, Confidence: 77.0, Length: 551, Words: 130
+2025-05-03 23:14:48,552 - INFO - New best Tesseract OCR result: glare_reduced, PSM 6, Confidence: 79.6, Length: 552, Words: 130
+2025-05-03 23:14:51,179 - INFO - New best Tesseract OCR result: glare_reduced, PSM 3, Confidence: 77.5, Length: 552, Words: 130
+2025-05-03 23:14:52,392 - INFO - New best Tesseract OCR result: glare_reduced, PSM 4, Confidence: 77.5, Length: 552, Words: 130
+2025-05-03 23:14:53,505 - INFO - New best Tesseract OCR result: glare_otsu, PSM 6, Confidence: 79.0, Length: 551, Words: 130
+2025-05-03 23:14:55,831 - INFO - New best Tesseract OCR result: glare_otsu, PSM 3, Confidence: 77.0, Length: 551, Words: 130
+2025-05-03 23:14:56,965 - INFO - New best Tesseract OCR result: glare_otsu, PSM 4, Confidence: 77.0, Length: 551, Words: 130
+2025-05-03 23:14:58,276 - INFO - New best Tesseract OCR result: original, PSM 6, Confidence: 78.8, Length: 552, Words: 130
+2025-05-03 23:15:00,995 - INFO - New best Tesseract OCR result: original, PSM 3, Confidence: 76.8, Length: 552, Words: 130
+2025-05-03 23:15:02,275 - INFO - New best Tesseract OCR result: original, PSM 4, Confidence: 76.8, Length: 552, Words: 130
+2025-05-03 23:15:06,394 - ERROR - EasyOCR error: list index out of range
+2025-05-03 23:15:06,439 - ERROR - Error processing image: cannot import name 'format_text' from 'lib.text_processing' (D:\KERJA\Bantu Teman\smartglass-ocr-api\lib\text_processing.py)
+2025-05-03 23:15:06,440 - ERROR - Traceback (most recent call last):
+  File "D:\KERJA\Bantu Teman\smartglass-ocr-api\lib\smartglass_ocr.py", line 548, in _process_image
+    from .text_processing import format_text
+ImportError: cannot import name 'format_text' from 'lib.text_processing' (D:\KERJA\Bantu Teman\smartglass-ocr-api\lib\text_processing.py)
+
+2025-05-03 23:15:06,444 - INFO - Markdown file saved: contoh-8-surat-untuk-temanjpg-20230130030155_1746288906.md
+2025-05-03 23:15:06,444 - INFO - File processed in 46.67 seconds: contoh-8-surat-untuk-temanjpg-20230130030155.jpg
+2025-05-03 23:15:06,445 - INFO - 127.0.0.1 - - [03/May/2025 23:15:06] "POST /api/process HTTP/1.1" 200 -
+2025-05-03 23:16:29,139 - INFO -  * Detected change in 'D:\\KERJA\\Bantu Teman\\smartglass-ocr-api\\lib\\text_processing.py', reloading
+2025-05-03 23:16:30,166 - INFO -  * Restarting with stat
+2025-05-03 23:16:38,529 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-03 23:16:38,534 - WARNING - PaddleOCR not available
+2025-05-03 23:16:38,568 - INFO - Tesseract version: 5.5.0.20241111
+2025-05-03 23:16:38,568 - INFO - SmartGlassOCR v4.1.0 initialized
+2025-05-03 23:16:38,568 - INFO - Available OCR engines: ['tesseract', 'easyocr']
+2025-05-03 23:16:38,569 - INFO - Running in standard mode
+2025-05-03 23:16:38,570 - INFO - OCR Processor initialized successfully
+2025-05-03 23:16:38,591 - WARNING -  * Debugger is active!
+2025-05-03 23:16:38,602 - INFO -  * Debugger PIN: 409-810-023
+2025-05-03 23:16:39,338 - INFO - Processing file: contoh-8-surat-untuk-temanjpg-20230130030155.jpg
+2025-05-03 23:16:39,340 - INFO - Processing image: data/uploads\contoh-8-surat-untuk-temanjpg-20230130030155_1746288999_9ec205d0.jpg
+2025-05-03 23:16:39,405 - INFO - Enhanced image analysis: document, 712x508, brightness: 240.4, contrast: 48.9, blur: 6207.5, table_likelihood: 0.00
+2025-05-03 23:16:39,406 - INFO - Using processing strategy: document
+2025-05-03 23:16:39,831 - INFO - Glare detected, applying advanced glare reduction
+2025-05-03 23:16:39,908 - INFO - Tesseract version: 5.5.0.20241111
+2025-05-03 23:16:39,910 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-03 23:16:43,820 - INFO - EasyOCR initialized successfully
+2025-05-03 23:16:43,911 - INFO - EasyOCR initialized successfully
+2025-05-03 23:16:43,917 - WARNING - PaddleOCR not available
+2025-05-03 23:16:45,526 - INFO - New best Tesseract OCR result: gray, PSM 6, Confidence: 78.8, Length: 552, Words: 130
+2025-05-03 23:16:48,571 - INFO - New best Tesseract OCR result: gray, PSM 3, Confidence: 76.8, Length: 552, Words: 130
+2025-05-03 23:16:49,852 - INFO - New best Tesseract OCR result: gray, PSM 4, Confidence: 76.8, Length: 552, Words: 130
+2025-05-03 23:16:51,141 - INFO - New best Tesseract OCR result: contrast, PSM 6, Confidence: 79.6, Length: 552, Words: 130
+2025-05-03 23:16:53,724 - INFO - New best Tesseract OCR result: contrast, PSM 3, Confidence: 77.5, Length: 552, Words: 130
+2025-05-03 23:16:55,078 - INFO - New best Tesseract OCR result: contrast, PSM 4, Confidence: 77.5, Length: 552, Words: 130
+2025-05-03 23:16:56,324 - INFO - New best Tesseract OCR result: otsu, PSM 6, Confidence: 79.0, Length: 551, Words: 130
+2025-05-03 23:16:58,811 - INFO - New best Tesseract OCR result: otsu, PSM 3, Confidence: 77.0, Length: 551, Words: 130
+2025-05-03 23:17:00,075 - INFO - New best Tesseract OCR result: otsu, PSM 4, Confidence: 77.0, Length: 551, Words: 130
+2025-05-03 23:17:05,394 - INFO - New best Tesseract OCR result: denoised_otsu, PSM 6, Confidence: 79.0, Length: 551, Words: 130
+2025-05-03 23:17:08,068 - INFO - New best Tesseract OCR result: denoised_otsu, PSM 3, Confidence: 77.0, Length: 551, Words: 130
+2025-05-03 23:17:09,275 - INFO - New best Tesseract OCR result: denoised_otsu, PSM 4, Confidence: 77.0, Length: 551, Words: 130
+2025-05-03 23:17:10,530 - INFO - New best Tesseract OCR result: glare_reduced, PSM 6, Confidence: 79.6, Length: 552, Words: 130
+2025-05-03 23:17:13,224 - INFO - New best Tesseract OCR result: glare_reduced, PSM 3, Confidence: 77.5, Length: 552, Words: 130
+2025-05-03 23:17:14,772 - INFO - New best Tesseract OCR result: glare_reduced, PSM 4, Confidence: 77.5, Length: 552, Words: 130
+2025-05-03 23:17:16,168 - INFO - New best Tesseract OCR result: glare_otsu, PSM 6, Confidence: 79.0, Length: 551, Words: 130
+2025-05-03 23:17:19,052 - INFO - New best Tesseract OCR result: glare_otsu, PSM 3, Confidence: 77.0, Length: 551, Words: 130
+2025-05-03 23:17:20,569 - INFO - New best Tesseract OCR result: glare_otsu, PSM 4, Confidence: 77.0, Length: 551, Words: 130
+2025-05-03 23:17:22,081 - INFO - New best Tesseract OCR result: original, PSM 6, Confidence: 78.8, Length: 552, Words: 130
+2025-05-03 23:17:25,516 - INFO - New best Tesseract OCR result: original, PSM 3, Confidence: 76.8, Length: 552, Words: 130
+2025-05-03 23:17:27,516 - INFO - New best Tesseract OCR result: original, PSM 4, Confidence: 76.8, Length: 552, Words: 130
+2025-05-03 23:17:34,262 - ERROR - EasyOCR error: list index out of range
+2025-05-03 23:17:34,320 - ERROR - Error processing image: cannot import name 'detect_language' from 'lib.text_processing' (D:\KERJA\Bantu Teman\smartglass-ocr-api\lib\text_processing.py)
+2025-05-03 23:17:34,321 - ERROR - Traceback (most recent call last):
+  File "D:\KERJA\Bantu Teman\smartglass-ocr-api\lib\smartglass_ocr.py", line 552, in _process_image
+    from .text_processing import detect_language
+ImportError: cannot import name 'detect_language' from 'lib.text_processing' (D:\KERJA\Bantu Teman\smartglass-ocr-api\lib\text_processing.py)
+
+2025-05-03 23:17:34,327 - INFO - Markdown file saved: contoh-8-surat-untuk-temanjpg-20230130030155_1746289054.md
+2025-05-03 23:17:34,329 - INFO - File processed in 54.99 seconds: contoh-8-surat-untuk-temanjpg-20230130030155.jpg
+2025-05-03 23:17:34,332 - INFO - 127.0.0.1 - - [03/May/2025 23:17:34] "POST /api/process HTTP/1.1" 200 -
+2025-05-03 23:18:36,995 - INFO -  * Detected change in 'D:\\KERJA\\Bantu Teman\\smartglass-ocr-api\\lib\\text_processing.py', reloading
+2025-05-03 23:18:38,038 - INFO -  * Restarting with stat
+2025-05-03 23:18:45,818 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-03 23:18:45,823 - WARNING - PaddleOCR not available
+2025-05-03 23:18:45,870 - INFO - Tesseract version: 5.5.0.20241111
+2025-05-03 23:18:45,870 - INFO - SmartGlassOCR v4.1.0 initialized
+2025-05-03 23:18:45,870 - INFO - Available OCR engines: ['tesseract', 'easyocr']
+2025-05-03 23:18:45,870 - INFO - Running in standard mode
+2025-05-03 23:18:45,872 - INFO - OCR Processor initialized successfully
+2025-05-03 23:18:45,890 - WARNING -  * Debugger is active!
+2025-05-03 23:18:45,905 - INFO -  * Debugger PIN: 409-810-023
+2025-05-03 23:18:48,709 - INFO - EasyOCR initialized successfully
+2025-05-03 23:18:49,309 - INFO - Processing file: contoh-8-surat-untuk-temanjpg-20230130030155.jpg
+2025-05-03 23:18:49,310 - INFO - Processing image: data/uploads\contoh-8-surat-untuk-temanjpg-20230130030155_1746289129_546fdb48.jpg
+2025-05-03 23:18:49,379 - INFO - Enhanced image analysis: document, 712x508, brightness: 240.4, contrast: 48.9, blur: 6207.5, table_likelihood: 0.00
+2025-05-03 23:18:49,380 - INFO - Using processing strategy: document
+2025-05-03 23:18:49,703 - INFO - Glare detected, applying advanced glare reduction
+2025-05-03 23:18:49,767 - INFO - Tesseract version: 5.5.0.20241111
+2025-05-03 23:18:49,769 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-03 23:18:52,207 - INFO - EasyOCR initialized successfully
+2025-05-03 23:18:52,211 - WARNING - PaddleOCR not available
+2025-05-03 23:18:53,633 - INFO - New best Tesseract OCR result: gray, PSM 6, Confidence: 78.8, Length: 552, Words: 130
+2025-05-03 23:18:56,602 - INFO - New best Tesseract OCR result: gray, PSM 3, Confidence: 76.8, Length: 552, Words: 130
+2025-05-03 23:18:58,035 - INFO - New best Tesseract OCR result: gray, PSM 4, Confidence: 76.8, Length: 552, Words: 130
+2025-05-03 23:18:59,390 - INFO - New best Tesseract OCR result: contrast, PSM 6, Confidence: 79.6, Length: 552, Words: 130
+2025-05-03 23:19:02,098 - INFO - New best Tesseract OCR result: contrast, PSM 3, Confidence: 77.5, Length: 552, Words: 130
+2025-05-03 23:19:03,408 - INFO - New best Tesseract OCR result: contrast, PSM 4, Confidence: 77.5, Length: 552, Words: 130
+2025-05-03 23:19:04,615 - INFO - New best Tesseract OCR result: otsu, PSM 6, Confidence: 79.0, Length: 551, Words: 130
+2025-05-03 23:19:07,129 - INFO - New best Tesseract OCR result: otsu, PSM 3, Confidence: 77.0, Length: 551, Words: 130
+2025-05-03 23:19:08,373 - INFO - New best Tesseract OCR result: otsu, PSM 4, Confidence: 77.0, Length: 551, Words: 130
+2025-05-03 23:19:13,741 - INFO - New best Tesseract OCR result: denoised_otsu, PSM 6, Confidence: 79.0, Length: 551, Words: 130
+2025-05-03 23:19:16,396 - INFO - New best Tesseract OCR result: denoised_otsu, PSM 3, Confidence: 77.0, Length: 551, Words: 130
+2025-05-03 23:19:17,634 - INFO - New best Tesseract OCR result: denoised_otsu, PSM 4, Confidence: 77.0, Length: 551, Words: 130
+2025-05-03 23:19:18,937 - INFO - New best Tesseract OCR result: glare_reduced, PSM 6, Confidence: 79.6, Length: 552, Words: 130
+2025-05-03 23:19:21,805 - INFO - New best Tesseract OCR result: glare_reduced, PSM 3, Confidence: 77.5, Length: 552, Words: 130
+2025-05-03 23:19:23,217 - INFO - New best Tesseract OCR result: glare_reduced, PSM 4, Confidence: 77.5, Length: 552, Words: 130
+2025-05-03 23:19:24,428 - INFO - New best Tesseract OCR result: glare_otsu, PSM 6, Confidence: 79.0, Length: 551, Words: 130
+2025-05-03 23:19:27,007 - INFO - New best Tesseract OCR result: glare_otsu, PSM 3, Confidence: 77.0, Length: 551, Words: 130
+2025-05-03 23:19:28,265 - INFO - New best Tesseract OCR result: glare_otsu, PSM 4, Confidence: 77.0, Length: 551, Words: 130
+2025-05-03 23:19:29,635 - INFO - New best Tesseract OCR result: original, PSM 6, Confidence: 78.8, Length: 552, Words: 130
+2025-05-03 23:19:32,398 - INFO - New best Tesseract OCR result: original, PSM 3, Confidence: 76.8, Length: 552, Words: 130
+2025-05-03 23:19:33,806 - INFO - New best Tesseract OCR result: original, PSM 4, Confidence: 76.8, Length: 552, Words: 130
+2025-05-03 23:19:38,416 - ERROR - EasyOCR error: list index out of range
+2025-05-03 23:19:38,468 - ERROR - Error processing image: cannot import name 'extract_structured_info' from 'lib.information_extraction' (D:\KERJA\Bantu Teman\smartglass-ocr-api\lib\information_extraction.py)
+2025-05-03 23:19:38,468 - ERROR - Traceback (most recent call last):
+  File "D:\KERJA\Bantu Teman\smartglass-ocr-api\lib\smartglass_ocr.py", line 558, in _process_image
+    from .information_extraction import extract_structured_info
+ImportError: cannot import name 'extract_structured_info' from 'lib.information_extraction' (D:\KERJA\Bantu Teman\smartglass-ocr-api\lib\information_extraction.py)
+
+2025-05-03 23:19:38,471 - INFO - Markdown file saved: contoh-8-surat-untuk-temanjpg-20230130030155_1746289178.md
+2025-05-03 23:19:38,471 - INFO - File processed in 49.16 seconds: contoh-8-surat-untuk-temanjpg-20230130030155.jpg
+2025-05-03 23:19:38,472 - INFO - 127.0.0.1 - - [03/May/2025 23:19:38] "POST /api/process HTTP/1.1" 200 -
+2025-05-03 23:24:05,485 - INFO -  * Detected change in 'D:\\KERJA\\Bantu Teman\\smartglass-ocr-api\\lib\\information_extraction.py', reloading
+2025-05-03 23:24:06,320 - INFO -  * Restarting with stat
+2025-05-03 23:24:24,482 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-03 23:24:24,489 - WARNING - PaddleOCR not available
+2025-05-03 23:24:24,555 - INFO - Tesseract version: 5.5.0.20241111
+2025-05-03 23:24:24,555 - INFO - SmartGlassOCR v4.1.0 initialized
+2025-05-03 23:24:24,555 - INFO - Available OCR engines: ['tesseract', 'easyocr']
+2025-05-03 23:24:24,556 - INFO - Running in standard mode
+2025-05-03 23:24:24,558 - INFO - OCR Processor initialized successfully
+2025-05-03 23:24:24,589 - WARNING -  * Debugger is active!
+2025-05-03 23:24:24,604 - INFO -  * Debugger PIN: 409-810-023
+2025-05-03 23:24:25,460 - INFO - Processing file: contoh-8-surat-untuk-temanjpg-20230130030155.jpg
+2025-05-03 23:24:25,469 - INFO - Processing image: data/uploads\contoh-8-surat-untuk-temanjpg-20230130030155_1746289465_905f8480.jpg
+2025-05-03 23:24:25,624 - INFO - Enhanced image analysis: document, 712x508, brightness: 240.4, contrast: 48.9, blur: 6207.5, table_likelihood: 0.00
+2025-05-03 23:24:25,626 - INFO - Using processing strategy: document
+2025-05-03 23:24:26,101 - INFO - Glare detected, applying advanced glare reduction
+2025-05-03 23:24:26,183 - INFO - Tesseract version: 5.5.0.20241111
+2025-05-03 23:24:26,185 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-03 23:24:30,203 - INFO - EasyOCR initialized successfully
+2025-05-03 23:24:30,285 - INFO - EasyOCR initialized successfully
+2025-05-03 23:24:30,290 - WARNING - PaddleOCR not available
+2025-05-03 23:24:31,627 - INFO - New best Tesseract OCR result: gray, PSM 6, Confidence: 78.8, Length: 552, Words: 130
+2025-05-03 23:24:34,112 - INFO - New best Tesseract OCR result: gray, PSM 3, Confidence: 76.8, Length: 552, Words: 130
+2025-05-03 23:24:35,430 - INFO - New best Tesseract OCR result: gray, PSM 4, Confidence: 76.8, Length: 552, Words: 130
+2025-05-03 23:24:36,720 - INFO - New best Tesseract OCR result: contrast, PSM 6, Confidence: 79.6, Length: 552, Words: 130
+2025-05-03 23:24:39,419 - INFO - New best Tesseract OCR result: contrast, PSM 3, Confidence: 77.5, Length: 552, Words: 130
+2025-05-03 23:24:40,893 - INFO - New best Tesseract OCR result: contrast, PSM 4, Confidence: 77.5, Length: 552, Words: 130
+2025-05-03 23:24:42,133 - INFO - New best Tesseract OCR result: otsu, PSM 6, Confidence: 79.0, Length: 551, Words: 130
+2025-05-03 23:24:44,639 - INFO - New best Tesseract OCR result: otsu, PSM 3, Confidence: 77.0, Length: 551, Words: 130
+2025-05-03 23:24:46,020 - INFO - New best Tesseract OCR result: otsu, PSM 4, Confidence: 77.0, Length: 551, Words: 130
+2025-05-03 23:24:51,404 - INFO - New best Tesseract OCR result: denoised_otsu, PSM 6, Confidence: 79.0, Length: 551, Words: 130
+2025-05-03 23:24:53,883 - INFO - New best Tesseract OCR result: denoised_otsu, PSM 3, Confidence: 77.0, Length: 551, Words: 130
+2025-05-03 23:24:55,135 - INFO - New best Tesseract OCR result: denoised_otsu, PSM 4, Confidence: 77.0, Length: 551, Words: 130
+2025-05-03 23:24:56,342 - INFO - New best Tesseract OCR result: glare_reduced, PSM 6, Confidence: 79.6, Length: 552, Words: 130
+2025-05-03 23:24:58,886 - INFO - New best Tesseract OCR result: glare_reduced, PSM 3, Confidence: 77.5, Length: 552, Words: 130
+2025-05-03 23:25:00,190 - INFO - New best Tesseract OCR result: glare_reduced, PSM 4, Confidence: 77.5, Length: 552, Words: 130
+2025-05-03 23:25:01,368 - INFO - New best Tesseract OCR result: glare_otsu, PSM 6, Confidence: 79.0, Length: 551, Words: 130
+2025-05-03 23:25:03,761 - INFO - New best Tesseract OCR result: glare_otsu, PSM 3, Confidence: 77.0, Length: 551, Words: 130
+2025-05-03 23:25:05,080 - INFO - New best Tesseract OCR result: glare_otsu, PSM 4, Confidence: 77.0, Length: 551, Words: 130
+2025-05-03 23:25:06,365 - INFO - New best Tesseract OCR result: original, PSM 6, Confidence: 78.8, Length: 552, Words: 130
+2025-05-03 23:25:09,075 - INFO - New best Tesseract OCR result: original, PSM 3, Confidence: 76.8, Length: 552, Words: 130
+2025-05-03 23:25:10,529 - INFO - New best Tesseract OCR result: original, PSM 4, Confidence: 76.8, Length: 552, Words: 130
+2025-05-03 23:25:14,874 - ERROR - EasyOCR error: list index out of range
+2025-05-03 23:25:14,907 - ERROR - Error processing file: cannot import name 'generate_summary' from 'lib.text_processing' (D:\KERJA\Bantu Teman\smartglass-ocr-api\lib\text_processing.py)
+2025-05-03 23:25:14,908 - ERROR - Traceback (most recent call last):
+  File "D:\KERJA\Bantu Teman\smartglass-ocr-api\lib\smartglass_ocr.py", line 876, in process_file
+    from .text_processing import generate_summary, detect_document_structure, extract_key_insights
+ImportError: cannot import name 'generate_summary' from 'lib.text_processing' (D:\KERJA\Bantu Teman\smartglass-ocr-api\lib\text_processing.py)
+
+2025-05-03 23:25:14,909 - INFO - Markdown file saved: contoh-8-surat-untuk-temanjpg-20230130030155_1746289514.md
+2025-05-03 23:25:14,910 - INFO - File processed in 49.45 seconds: contoh-8-surat-untuk-temanjpg-20230130030155.jpg
+2025-05-03 23:25:14,911 - INFO - 127.0.0.1 - - [03/May/2025 23:25:14] "POST /api/process HTTP/1.1" 200 -
+2025-05-03 23:26:55,813 - INFO -  * Detected change in 'D:\\KERJA\\Bantu Teman\\smartglass-ocr-api\\lib\\text_processing.py', reloading
+2025-05-03 23:26:57,167 - INFO -  * Restarting with stat
+2025-05-03 23:27:05,795 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-03 23:27:05,800 - WARNING - PaddleOCR not available
+2025-05-03 23:27:05,841 - INFO - Tesseract version: 5.5.0.20241111
+2025-05-03 23:27:05,841 - INFO - SmartGlassOCR v4.1.0 initialized
+2025-05-03 23:27:05,842 - INFO - Available OCR engines: ['tesseract', 'easyocr']
+2025-05-03 23:27:05,842 - INFO - Running in standard mode
+2025-05-03 23:27:05,844 - INFO - OCR Processor initialized successfully
+2025-05-03 23:27:05,867 - WARNING -  * Debugger is active!
+2025-05-03 23:27:05,880 - INFO -  * Debugger PIN: 409-810-023
+2025-05-03 23:27:06,659 - INFO - Processing file: contoh-8-surat-untuk-temanjpg-20230130030155.jpg
+2025-05-03 23:27:06,660 - INFO - Processing image: data/uploads\contoh-8-surat-untuk-temanjpg-20230130030155_1746289626_b0b9eabe.jpg
+2025-05-03 23:27:06,741 - INFO - Enhanced image analysis: document, 712x508, brightness: 240.4, contrast: 48.9, blur: 6207.5, table_likelihood: 0.00
+2025-05-03 23:27:06,742 - INFO - Using processing strategy: document
+2025-05-03 23:27:07,281 - INFO - Glare detected, applying advanced glare reduction
+2025-05-03 23:27:07,366 - INFO - Tesseract version: 5.5.0.20241111
+2025-05-03 23:27:07,368 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-03 23:27:11,217 - INFO - EasyOCR initialized successfully
+2025-05-03 23:27:11,236 - INFO - EasyOCR initialized successfully
+2025-05-03 23:27:11,242 - WARNING - PaddleOCR not available
+2025-05-03 23:27:12,592 - INFO - New best Tesseract OCR result: gray, PSM 6, Confidence: 78.8, Length: 552, Words: 130
+2025-05-03 23:27:15,362 - INFO - New best Tesseract OCR result: gray, PSM 3, Confidence: 76.8, Length: 552, Words: 130
+2025-05-03 23:27:16,753 - INFO - New best Tesseract OCR result: gray, PSM 4, Confidence: 76.8, Length: 552, Words: 130
+2025-05-03 23:27:18,099 - INFO - New best Tesseract OCR result: contrast, PSM 6, Confidence: 79.6, Length: 552, Words: 130
+2025-05-03 23:27:20,850 - INFO - New best Tesseract OCR result: contrast, PSM 3, Confidence: 77.5, Length: 552, Words: 130
+2025-05-03 23:27:22,241 - INFO - New best Tesseract OCR result: contrast, PSM 4, Confidence: 77.5, Length: 552, Words: 130
+2025-05-03 23:27:23,561 - INFO - New best Tesseract OCR result: otsu, PSM 6, Confidence: 79.0, Length: 551, Words: 130
+2025-05-03 23:27:26,529 - INFO - New best Tesseract OCR result: otsu, PSM 3, Confidence: 77.0, Length: 551, Words: 130
+2025-05-03 23:27:28,394 - INFO - New best Tesseract OCR result: otsu, PSM 4, Confidence: 77.0, Length: 551, Words: 130
+2025-05-03 23:27:40,150 - INFO - New best Tesseract OCR result: denoised_otsu, PSM 6, Confidence: 79.0, Length: 551, Words: 130
+2025-05-03 23:27:43,138 - INFO - New best Tesseract OCR result: denoised_otsu, PSM 3, Confidence: 77.0, Length: 551, Words: 130
+2025-05-03 23:27:44,565 - INFO - New best Tesseract OCR result: denoised_otsu, PSM 4, Confidence: 77.0, Length: 551, Words: 130
+2025-05-03 23:27:45,977 - INFO - New best Tesseract OCR result: glare_reduced, PSM 6, Confidence: 79.6, Length: 552, Words: 130
+2025-05-03 23:27:48,822 - INFO - New best Tesseract OCR result: glare_reduced, PSM 3, Confidence: 77.5, Length: 552, Words: 130
+2025-05-03 23:27:50,089 - INFO - New best Tesseract OCR result: glare_reduced, PSM 4, Confidence: 77.5, Length: 552, Words: 130
+2025-05-03 23:27:51,313 - INFO - New best Tesseract OCR result: glare_otsu, PSM 6, Confidence: 79.0, Length: 551, Words: 130
+2025-05-03 23:27:54,171 - INFO - New best Tesseract OCR result: glare_otsu, PSM 3, Confidence: 77.0, Length: 551, Words: 130
+2025-05-03 23:27:55,680 - INFO - New best Tesseract OCR result: glare_otsu, PSM 4, Confidence: 77.0, Length: 551, Words: 130
+2025-05-03 23:27:59,205 - INFO - New best Tesseract OCR result: original, PSM 6, Confidence: 78.8, Length: 552, Words: 130
+2025-05-03 23:28:04,733 - INFO - New best Tesseract OCR result: original, PSM 3, Confidence: 76.8, Length: 552, Words: 130
+2025-05-03 23:28:06,601 - INFO - New best Tesseract OCR result: original, PSM 4, Confidence: 76.8, Length: 552, Words: 130
+2025-05-03 23:28:11,040 - ERROR - EasyOCR error: list index out of range
+2025-05-03 23:28:11,198 - INFO - Markdown file saved: contoh-8-surat-untuk-temanjpg-20230130030155_1746289691.md
+2025-05-03 23:28:11,198 - INFO - File processed in 64.54 seconds: contoh-8-surat-untuk-temanjpg-20230130030155.jpg
+2025-05-03 23:28:11,200 - INFO - 127.0.0.1 - - [03/May/2025 23:28:11] "POST /api/process HTTP/1.1" 200 -
+2025-05-03 23:43:06,773 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-03 23:43:09,358 - INFO - EasyOCR initialized successfully
+2025-05-03 23:43:14,705 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.8.192:5000
+2025-05-03 23:43:14,706 - INFO - [33mPress CTRL+C to quit[0m
+2025-05-03 23:43:14,759 - INFO -  * Restarting with stat
+2025-05-03 23:43:22,177 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-03 23:43:25,910 - WARNING -  * Debugger is active!
+2025-05-03 23:43:25,919 - INFO -  * Debugger PIN: 409-810-023
+2025-05-03 23:56:17,036 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-03 23:57:09,540 - ERROR - PaddleOCR error: PaddleOCR.ocr() got an unexpected keyword argument 'rec_model_dir'
+2025-05-03 23:57:18,293 - ERROR - EasyOCR error: list index out of range
+2025-05-03 23:57:19,695 - INFO - 127.0.0.1 - - [03/May/2025 23:57:19] "POST /api/process HTTP/1.1" 200 -
+2025-05-04 00:01:30,447 - INFO - FakeTensor cache stats:
+2025-05-04 00:01:30,448 - INFO -   cache_hits: 0
+2025-05-04 00:01:30,448 - INFO -   cache_misses: 0

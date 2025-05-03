@@ -681,3 +681,20 @@ def _format_structured_info(info: dict) -> dict:
         formatted["general"] = info
         
     return formatted
+
+# Fungsi standalone untuk extract_structured_info
+def extract_structured_info(text: str, image_type: Any = None) -> Optional[Dict[str, Any]]:
+    """
+    Standalone function untuk ekstraksi informasi terstruktur
+    Wrapper untuk metode InformationExtractor.extract_structured_info untuk kompatibilitas
+    
+    Args:
+        text: Teks yang akan diekstrak informasinya
+        image_type: Tipe gambar (opsional)
+        
+    Returns:
+        Dictionary dari informasi terstruktur atau None
+    """
+    # Membuat instance InformationExtractor dan memanggil metodenya
+    extractor = InformationExtractor()
+    return extractor.extract_structured_info(text, image_type)

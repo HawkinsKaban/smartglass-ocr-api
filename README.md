@@ -9,12 +9,16 @@ SmartGlass OCR API adalah sistem berbasis REST API yang dirancang untuk membantu
 
 ## Fitur Utama
 
-- **OCR Canggih**: Konversi teks dari gambar atau PDF dengan dukungan multi-engine (Tesseract, EasyOCR, PaddleOCR)
+- **OCR Multi-Engine**: Konversi teks dari gambar atau PDF dengan dukungan beberapa engine (Tesseract, EasyOCR, PaddleOCR)
+- **Preprocessing Gambar Pintar**: Deteksi glare, peningkatan kontras, dan optimasi gambar otomatis 
 - **Peringkasan Otomatis**: Menghasilkan ringkasan dari teks yang dikenali untuk akses informasi yang lebih cepat
+- **Post-processing Teks**: Koreksi kesalahan umum OCR
 - **Format Markdown**: Menyimpan hasil OCR dalam format Markdown yang terstruktur dan mudah dibaca
 - **REST API**: Antarmuka API yang mudah digunakan untuk integrasi dengan aplikasi lain
 - **Analisis Dokumen**: Deteksi otomatis struktur dokumen (tabel, formulir, paragraf, dll.)
-- **Multi-bahasa**: Dukungan untuk bahasa Indonesia dan Inggris
+- **Ekstraksi Informasi Terstruktur**: Ekstraksi dari dokumen khusus (kartu identitas, kwitansi, formulir)
+- **Multi-bahasa**: Dukungan untuk bahasa Indonesia dan Inggris dengan deteksi bahasa otomatis
+- **Visualisasi Hasil**: Format output Markdown yang rapi dan terstruktur
 
 ## Teknologi yang Digunakan
 
@@ -24,6 +28,16 @@ SmartGlass OCR API adalah sistem berbasis REST API yang dirancang untuk membantu
 - **EasyOCR & PaddleOCR**: Engine OCR alternatif untuk akurasi yang lebih baik
 - **NLTK**: Pustaka NLP untuk pemrosesan teks dan peringkasan
 - **OpenCV**: Pustaka pemrosesan gambar untuk pre-processing OCR
+- **NetworkX**: Untuk implementasi algoritma TextRank dalam peringkasan teks
+
+## Persyaratan Sistem
+
+- Python 3.8 atau lebih tinggi
+- Windows, macOS, atau Linux
+- Minimal 4GB RAM (8GB direkomendasikan)
+- Kartu grafis dengan CUDA untuk performa optimal (opsional)
+- Tesseract OCR
+- Poppler (untuk pemrosesan PDF)
 
 ## Struktur Proyek
 
@@ -42,9 +56,15 @@ smartglass-ocr-api/
 │       └── utils.py             # Helper functions
 ├── data/                        # Data storage
 │   ├── uploads/                 # Temporary file uploads
-│   └── markdown/                # Generated markdown files
+│   ├── markdown/                # Generated markdown files
+│   └── processed/               # Processed results
 ├── lib/                         # External libraries
-│   └── smartglass_ocr.py        # Original OCR engine
+│   ├── smartglass_ocr.py        # Original OCR engine
+│   ├── text_processing.py       # Text processing and OCR correction
+│   ├── information_extraction.py # Structured information extraction
+│   └── model.py                 # Data models and enumerations
+├── static/                      # Static assets
+├── templates/                   # HTML templates
 ├── tests/                       # Test suite
 │   └── test_api.py              # API tests
 ├── .gitignore                   # Git ignore file
@@ -82,22 +102,53 @@ smartglass-ocr-api/
    pip install -r requirements.txt
    ```
 
-4. Install dependensi sistem:
+4. Install Tesseract OCR:
+   
+   #### Windows:
+   1. Download installer Tesseract dari [UB Mannheim](https://github.com/UB-Mannheim/tesseract/wiki)
+   2. Install dan pastikan untuk menambahkan Tesseract ke PATH
+   3. Secara default, Tesseract akan terinstal di `C:\Program Files\Tesseract-OCR`
+
+   #### macOS:
    ```bash
-   # Ubuntu/Debian
-   sudo apt-get update && sudo apt-get install -y tesseract-ocr libtesseract-dev poppler-utils
-   
-   # MacOS
    brew install tesseract poppler
-   
-   # Windows - Download dan install Tesseract dari:
-   # https://github.com/UB-Mannheim/tesseract/wiki
    ```
 
-5. Jalankan aplikasi:
+   #### Linux (Ubuntu/Debian):
+   ```bash
+   sudo apt-get update
+   sudo apt-get install -y tesseract-ocr libtesseract-dev poppler-utils
+   ```
+
+5. Konfigurasi Lingkungan (Opsional):
+
+   Buat file `.env` di direktori root:
+   ```
+   FLASK_ENV=development
+   DEBUG=True
+   PORT=5000
+   SECRET_KEY=smartglass-ocr-secret
+   UPLOAD_FOLDER=data/uploads
+   MARKDOWN_FOLDER=data/markdown
+   ```
+
+## Cara Menjalankan
+
+1. Aktifkan virtual environment jika belum aktif:
+   ```bash
+   # Windows
+   venv\Scripts\activate
+   # macOS/Linux
+   source venv/bin/activate
+   ```
+
+2. Jalankan aplikasi:
    ```bash
    python run.py
    ```
+
+3. Akses API di: http://localhost:5000/api/
+   - Dokumentasi API tersedia di: http://localhost:5000/api/docs
 
 ## Penggunaan API
 
@@ -108,6 +159,7 @@ smartglass-ocr-api/
 - **GET /api/markdown**: Daftar semua file markdown
 - **GET /api/markdown/\<filename\>**: Mendapatkan file markdown tertentu
 - **GET /api/stats**: Statistik engine OCR
+- **GET /api/task_status/\<task_id\>**: Cek status tugas OCR (untuk tugas asinkron)
 
 ### Contoh Penggunaan
 
@@ -229,6 +281,29 @@ Konfigurasi aplikasi dapat disesuaikan melalui variabel lingkungan atau file `.e
 - `PORT`: Port untuk menjalankan API (default: 5000)
 - `DEBUG`: Mode debug (default: "false")
 - `SECRET_KEY`: Secret key untuk aplikasi Flask (default: "smartglass-ocr-secret")
+- `DEFAULT_OCR_ENGINE`: Engine OCR default (default: "tesseract")
+- `DEFAULT_LANGUAGES`: Bahasa default untuk OCR (default: "ind+eng")
+
+## Troubleshooting
+
+### Masalah Umum
+
+1. **Error: cannot import name 'post_process_text' from 'lib.text_processing'**
+   - Solusi: Pastikan Anda telah menambahkan fungsi standalone `post_process_text` di akhir file `text_processing.py`
+
+2. **Error: "Neither CUDA nor MPS are available - defaulting to CPU"**
+   - Solusi: Ini hanya peringatan dan tidak menghalangi aplikasi berjalan. Untuk peningkatan kinerja, instal driver CUDA jika Anda memiliki GPU NVIDIA.
+
+3. **Error: "PaddleOCR not available"**
+   - Solusi: Ini hanya peringatan. PaddleOCR adalah opsional. Jika diperlukan, instal dengan: `pip install paddlepaddle paddleocr`
+
+4. **Error dengan EasyOCR: "list index out of range"**
+   - Solusi: Ini adalah masalah umum dengan beberapa versi EasyOCR. Coba instal ulang: `pip uninstall easyocr && pip install easyocr==1.7.0`
+
+5. **File gambar tidak terproses dengan benar**
+   - Pastikan format gambar didukung (JPG, PNG, TIFF, BMP)
+   - Coba tingkatkan resolusi gambar (min. 300 DPI direkomendasikan)
+   - Pastikan gambar dalam kondisi yang baik (mis. tidak terlalu gelap atau blur)
 
 ## Kontribusi
 
@@ -239,6 +314,12 @@ Kami sangat menghargai kontribusi Anda untuk pengembangan SmartGlass OCR API. Un
 3. Commit perubahan (`git commit -m 'Add some AmazingFeature'`)
 4. Push ke branch (`git push origin feature/AmazingFeature`)
 5. Buka Pull Request
+
+## Catatan Penting
+
+- APInya dirancang untuk environment pengembangan. Untuk production, gunakan server WSGI seperti Gunicorn
+- Pada perangkat tanpa GPU, pemrosesan gambar mungkin lebih lambat
+- Modul Tesseract dan EasyOCR membutuhkan waktu untuk menginisialisasi saat pertama kali dijalankan
 
 ## Lisensi
 

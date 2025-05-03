@@ -74,7 +74,7 @@ class TextProcessor:
         """
         self.config = config or {}
     
-    def post_process_text(text: str, image_type) -> str:
+    def post_process_text(self, text: str, image_type) -> str:
         """
         Apply rule-based post-processing to extracted text
         
@@ -132,16 +132,16 @@ class TextProcessor:
             image_type_value = image_type.value.lower()
             if 'receipt' in image_type_value:
                 # Apply receipt-specific corrections
-                text = _fix_receipt_text(text)
+                text = self._fix_receipt_text(text)
             elif 'id_card' in image_type_value:
                 # Apply ID card-specific corrections
-                text = _fix_id_card_text(text)
+                text = self._fix_id_card_text(text)
             elif 'form' in image_type_value:
                 # Apply form-specific corrections
-                text = _fix_form_text(text)
+                text = self._fix_form_text(text)
             elif 'table' in image_type_value:
                 # Apply table-specific corrections
-                text = _fix_table_text(text)
+                text = self._fix_table_text(text)
         
         return text.strip()
     
@@ -2361,3 +2361,99 @@ class TextProcessor:
         
         # Limit to 5 insights
         return insights[:5]
+    
+def post_process_text(text: str, image_type) -> str:
+    """
+    Standalone function untuk post-processing teks
+    Wrapper untuk metode TextProcessor untuk mempertahankan kompatibilitas
+    
+    Args:
+        text: Teks input
+        image_type: Tipe gambar
+        
+    Returns:
+        Teks yang sudah diproses
+    """
+    # Membuat instance TextProcessor dan memanggil metodenya
+    processor = TextProcessor()
+    return processor.post_process_text(text, image_type)
+
+def format_text(text: str, layout_info: Dict) -> str:
+    """
+    Standalone function untuk memformat teks
+    Wrapper untuk metode TextProcessor.format_text untuk kompatibilitas
+    
+    Args:
+        text: Teks yang akan diformat
+        layout_info: Informasi layout
+        
+    Returns:
+        Teks yang diformat
+    """
+    # Membuat instance TextProcessor dan memanggil metodenya
+    processor = TextProcessor()
+    return processor.format_text(text, layout_info)
+
+def detect_language(text: str) -> str:
+    """
+    Standalone function untuk mendeteksi bahasa
+    Wrapper untuk metode TextProcessor.detect_language untuk kompatibilitas
+    
+    Args:
+        text: Teks yang akan dideteksi bahasanya
+        
+    Returns:
+        Kode bahasa yang terdeteksi
+    """
+    # Membuat instance TextProcessor dan memanggil metodenya
+    processor = TextProcessor()
+    return processor.detect_language(text)
+
+def generate_summary(text: str, max_length: int = 200, style: str = "concise") -> str:
+    """
+    Standalone function untuk membuat ringkasan dari teks
+    Wrapper untuk metode TextProcessor.generate_summary untuk kompatibilitas
+    
+    Args:
+        text: Teks yang akan diringkas
+        max_length: Panjang maksimum ringkasan
+        style: Gaya ringkasan (concise, detailed, bullets, structured)
+        
+    Returns:
+        Teks ringkasan
+    """
+    # Membuat instance TextProcessor dan memanggil metodenya
+    processor = TextProcessor()
+    return processor.generate_summary(text, max_length, style)
+
+# Fungsi standalone untuk detect_document_structure
+def detect_document_structure(text: str) -> DocumentStructure:
+    """
+    Standalone function untuk mendeteksi struktur dokumen
+    Wrapper untuk metode TextProcessor.detect_document_structure untuk kompatibilitas
+    
+    Args:
+        text: Teks yang akan dianalisis strukturnya
+        
+    Returns:
+        Enum DocumentStructure
+    """
+    # Membuat instance TextProcessor dan memanggil metodenya
+    processor = TextProcessor()
+    return processor.detect_document_structure(text)
+
+# Fungsi standalone untuk extract_key_insights
+def extract_key_insights(text: str) -> List[str]:
+    """
+    Standalone function untuk mengekstrak insight penting dari teks
+    Wrapper untuk metode TextProcessor.extract_key_insights untuk kompatibilitas
+    
+    Args:
+        text: Teks yang akan diekstrak insightnya
+        
+    Returns:
+        List insight dalam bentuk string
+    """
+    # Membuat instance TextProcessor dan memanggil metodenya
+    processor = TextProcessor()
+    return processor.extract_key_insights(text)
