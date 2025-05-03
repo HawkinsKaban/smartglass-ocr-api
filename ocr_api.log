@@ -1545,3 +1545,149 @@ SyntaxError: expected 'except' or 'finally' block
 2025-05-04 00:19:27,697 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
 2025-05-04 00:19:41,733 - ERROR - EasyOCR error: [enforce fail at alloc_cpu.cpp:116] data. DefaultCPUAllocator: not enough memory: you tried to allocate 1195376640 bytes.
 2025-05-04 00:19:57,113 - INFO - 127.0.0.1 - - [04/May/2025 00:19:57] "POST /api/process HTTP/1.1" 200 -
+2025-05-04 00:23:33,534 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-04 00:23:36,047 - INFO - EasyOCR initialized successfully
+2025-05-04 00:23:41,429 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.8.192:5000
+2025-05-04 00:23:41,429 - INFO - [33mPress CTRL+C to quit[0m
+2025-05-04 00:23:41,435 - INFO -  * Restarting with stat
+2025-05-04 00:23:48,246 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-04 00:23:52,584 - WARNING -  * Debugger is active!
+2025-05-04 00:23:52,593 - INFO -  * Debugger PIN: 409-810-023
+2025-05-04 00:24:28,844 - INFO - 127.0.0.1 - - [04/May/2025 00:24:28] "GET /api/ HTTP/1.1" 200 -
+2025-05-04 00:24:39,997 - INFO - 127.0.0.1 - - [04/May/2025 00:24:39] "GET /api/docs HTTP/1.1" 200 -
+2025-05-04 00:25:10,688 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-04 00:26:01,942 - INFO - 127.0.0.1 - - [04/May/2025 00:26:01] "POST /api/process HTTP/1.1" 200 -
+2025-05-04 00:26:18,261 - INFO - 127.0.0.1 - - [04/May/2025 00:26:18] "GET /api/markdown HTTP/1.1" 200 -
+2025-05-04 00:26:36,464 - INFO - 127.0.0.1 - - [04/May/2025 00:26:36] "[35m[1mGET /api/markdown/contoh-8-surat-untuk-temanjpg-20230130030155_1746293161.md HTTP/1.1[0m" 500 -
+2025-05-04 00:27:35,087 - INFO - 127.0.0.1 - - [04/May/2025 00:27:35] "GET /api/markdown/contoh-8-surat-untuk-temanjpg-20230130030155_1746293161.md?raw=true HTTP/1.1" 200 -
+2025-05-04 00:27:49,218 - INFO - 127.0.0.1 - - [04/May/2025 00:27:49] "GET /api/stats HTTP/1.1" 200 -
+2025-05-04 00:30:20,157 - ERROR - Error processing image: OpenCV(4.11.0) D:\a\opencv-python\opencv-python\opencv\modules\core\src\arithm.cpp:689: error: (-5:Bad argument) When the input arrays in add/subtract/multiply/divide functions have different types, the output array type must be explicitly specified in function 'cv::arithm_op'
+
+2025-05-04 00:30:20,186 - ERROR - Traceback (most recent call last):
+  File "D:\KERJA\Bantu Teman\smartglass-ocr-api\lib\smartglass_ocr.py", line 525, in _process_image
+    processed_images, image_data = self.image_processor.preprocess_image(image, image_stats, strategy)
+  File "D:\KERJA\Bantu Teman\smartglass-ocr-api\lib\image_processing.py", line 171, in preprocess_image
+    self._preprocess_book(base_image, image_data, processed_images)
+  File "D:\KERJA\Bantu Teman\smartglass-ocr-api\lib\image_processing.py", line 1075, in _preprocess_book
+    edge_enhanced = cv2.addWeighted(denoised, 0.8, dilated_edges.astype(np.float32), 0.2, 0)
+cv2.error: OpenCV(4.11.0) D:\a\opencv-python\opencv-python\opencv\modules\core\src\arithm.cpp:689: error: (-5:Bad argument) When the input arrays in add/subtract/multiply/divide functions have different types, the output array type must be explicitly specified in function 'cv::arithm_op'
+
+
+2025-05-04 00:30:20,189 - INFO - 127.0.0.1 - - [04/May/2025 00:30:20] "POST /api/process HTTP/1.1" 200 -
+2025-05-04 00:30:33,539 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-04 00:31:37,322 - INFO - 127.0.0.1 - - [04/May/2025 00:31:37] "POST /api/process HTTP/1.1" 200 -
+2025-05-04 00:32:20,030 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-04 00:33:46,728 - INFO - 127.0.0.1 - - [04/May/2025 00:33:46] "POST /api/process HTTP/1.1" 200 -
+2025-05-04 00:34:26,776 - ERROR - Error processing image: OpenCV(4.11.0) D:\a\opencv-python\opencv-python\opencv\modules\core\src\arithm.cpp:689: error: (-5:Bad argument) When the input arrays in add/subtract/multiply/divide functions have different types, the output array type must be explicitly specified in function 'cv::arithm_op'
+
+2025-05-04 00:34:26,777 - ERROR - Traceback (most recent call last):
+  File "D:\KERJA\Bantu Teman\smartglass-ocr-api\lib\smartglass_ocr.py", line 525, in _process_image
+    processed_images, image_data = self.image_processor.preprocess_image(image, image_stats, strategy)
+  File "D:\KERJA\Bantu Teman\smartglass-ocr-api\lib\image_processing.py", line 163, in preprocess_image
+    self._preprocess_natural(base_image, image_data, processed_images)
+  File "D:\KERJA\Bantu Teman\smartglass-ocr-api\lib\image_processing.py", line 984, in _preprocess_natural
+    edge_enhanced = cv2.addWeighted(contrast_enhanced, 0.7, dilated_edges.astype(np.float32), 0.3, 0)
+cv2.error: OpenCV(4.11.0) D:\a\opencv-python\opencv-python\opencv\modules\core\src\arithm.cpp:689: error: (-5:Bad argument) When the input arrays in add/subtract/multiply/divide functions have different types, the output array type must be explicitly specified in function 'cv::arithm_op'
+
+
+2025-05-04 00:34:26,791 - INFO - 127.0.0.1 - - [04/May/2025 00:34:26] "POST /api/process HTTP/1.1" 200 -
+2025-05-04 00:35:18,799 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-04 00:35:37,479 - INFO - 127.0.0.1 - - [04/May/2025 00:35:37] "POST /api/process HTTP/1.1" 200 -
+2025-05-04 00:36:21,808 - INFO - 127.0.0.1 - - [04/May/2025 00:36:21] "[33mGET /api/task_status/12345678-90ab-cdef-1234-567890abcdef HTTP/1.1[0m" 404 -
+2025-05-04 00:36:26,019 - INFO - 127.0.0.1 - - [04/May/2025 00:36:26] "GET /api/stats HTTP/1.1" 200 -
+2025-05-04 00:39:09,371 - INFO -  * Detected change in 'D:\\KERJA\\Bantu Teman\\smartglass-ocr-api\\app\\api\\routes.py', reloading
+2025-05-04 00:39:11,062 - INFO -  * Restarting with stat
+2025-05-04 00:39:20,111 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-04 00:39:23,452 - INFO - EasyOCR initialized successfully
+2025-05-04 00:39:27,112 - WARNING -  * Debugger is active!
+2025-05-04 00:39:27,123 - INFO -  * Debugger PIN: 409-810-023
+2025-05-04 00:39:34,755 - INFO -  * Detected change in 'D:\\KERJA\\Bantu Teman\\smartglass-ocr-api\\lib\\image_processing.py', reloading
+2025-05-04 00:39:36,462 - INFO -  * Restarting with stat
+2025-05-04 00:39:45,344 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-04 00:39:51,675 - WARNING -  * Debugger is active!
+2025-05-04 00:39:51,685 - INFO -  * Debugger PIN: 409-810-023
+2025-05-04 00:40:29,503 - ERROR - Error processing image: OpenCV(4.11.0) D:\a\opencv-python\opencv-python\opencv\modules\core\src\arithm.cpp:689: error: (-5:Bad argument) When the input arrays in add/subtract/multiply/divide functions have different types, the output array type must be explicitly specified in function 'cv::arithm_op'
+
+2025-05-04 00:40:29,522 - ERROR - Traceback (most recent call last):
+  File "D:\KERJA\Bantu Teman\smartglass-ocr-api\lib\smartglass_ocr.py", line 525, in _process_image
+    processed_images, image_data = self.image_processor.preprocess_image(image, image_stats, strategy)
+  File "D:\KERJA\Bantu Teman\smartglass-ocr-api\lib\image_processing.py", line 163, in preprocess_image
+    self._preprocess_natural(base_image, image_data, processed_images)
+  File "D:\KERJA\Bantu Teman\smartglass-ocr-api\lib\image_processing.py", line 984, in _preprocess_natural
+    edge_enhanced = cv2.addWeighted(contrast_enhanced.astype(np.float32), 0.7, dilated_edges.astype(np.float32), 0.3, 0).astype(np.uint8)
+cv2.error: OpenCV(4.11.0) D:\a\opencv-python\opencv-python\opencv\modules\core\src\arithm.cpp:689: error: (-5:Bad argument) When the input arrays in add/subtract/multiply/divide functions have different types, the output array type must be explicitly specified in function 'cv::arithm_op'
+
+
+2025-05-04 00:40:29,590 - INFO - 127.0.0.1 - - [04/May/2025 00:40:29] "POST /api/process HTTP/1.1" 200 -
+2025-05-04 00:43:10,519 - INFO -  * Detected change in 'D:\\KERJA\\Bantu Teman\\smartglass-ocr-api\\lib\\image_processing.py', reloading
+2025-05-04 00:43:12,457 - INFO -  * Restarting with stat
+2025-05-04 00:43:22,252 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-04 00:43:27,530 - WARNING -  * Debugger is active!
+2025-05-04 00:43:27,542 - INFO -  * Debugger PIN: 409-810-023
+2025-05-04 00:44:02,121 - INFO -  * Detected change in 'D:\\KERJA\\Bantu Teman\\smartglass-ocr-api\\lib\\image_processing.py', reloading
+2025-05-04 00:44:03,464 - INFO -  * Restarting with stat
+2025-05-04 00:44:11,394 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-04 00:44:16,212 - WARNING -  * Debugger is active!
+2025-05-04 00:44:16,224 - INFO -  * Debugger PIN: 409-810-023
+2025-05-04 00:45:05,740 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-04 00:46:26,825 - ERROR - Error processing file: Object of type int32 is not JSON serializable
+Traceback (most recent call last):
+  File "D:\KERJA\Bantu Teman\smartglass-ocr-api\app\api\routes.py", line 336, in process_file
+    return jsonify(response)
+  File "D:\KERJA\Bantu Teman\smartglass-ocr-api\venv\lib\site-packages\flask\json\__init__.py", line 170, in jsonify
+    return current_app.json.response(*args, **kwargs)  # type: ignore[return-value]
+  File "D:\KERJA\Bantu Teman\smartglass-ocr-api\venv\lib\site-packages\flask\json\provider.py", line 214, in response
+    f"{self.dumps(obj, **dump_args)}\n", mimetype=self.mimetype
+  File "D:\KERJA\Bantu Teman\smartglass-ocr-api\venv\lib\site-packages\flask\json\provider.py", line 179, in dumps
+    return json.dumps(obj, **kwargs)
+  File "C:\laragon\bin\python\python-3.10\lib\json\__init__.py", line 238, in dumps
+    **kw).encode(obj)
+  File "C:\laragon\bin\python\python-3.10\lib\json\encoder.py", line 201, in encode
+    chunks = list(chunks)
+  File "C:\laragon\bin\python\python-3.10\lib\json\encoder.py", line 431, in _iterencode
+    yield from _iterencode_dict(o, _current_indent_level)
+  File "C:\laragon\bin\python\python-3.10\lib\json\encoder.py", line 405, in _iterencode_dict
+    yield from chunks
+  File "C:\laragon\bin\python\python-3.10\lib\json\encoder.py", line 405, in _iterencode_dict
+    yield from chunks
+  File "C:\laragon\bin\python\python-3.10\lib\json\encoder.py", line 405, in _iterencode_dict
+    yield from chunks
+  [Previous line repeated 1 more time]
+  File "C:\laragon\bin\python\python-3.10\lib\json\encoder.py", line 325, in _iterencode_list
+    yield from chunks
+  File "C:\laragon\bin\python\python-3.10\lib\json\encoder.py", line 405, in _iterencode_dict
+    yield from chunks
+  File "C:\laragon\bin\python\python-3.10\lib\json\encoder.py", line 325, in _iterencode_list
+    yield from chunks
+  File "C:\laragon\bin\python\python-3.10\lib\json\encoder.py", line 325, in _iterencode_list
+    yield from chunks
+  File "C:\laragon\bin\python\python-3.10\lib\json\encoder.py", line 438, in _iterencode
+    o = _default(o)
+  File "D:\KERJA\Bantu Teman\smartglass-ocr-api\venv\lib\site-packages\flask\json\provider.py", line 121, in _default
+    raise TypeError(f"Object of type {type(o).__name__} is not JSON serializable")
+TypeError: Object of type int32 is not JSON serializable
+
+2025-05-04 00:46:26,827 - INFO - 127.0.0.1 - - [04/May/2025 00:46:26] "[35m[1mPOST /api/process HTTP/1.1[0m" 500 -
+2025-05-04 00:47:57,309 - INFO -  * Detected change in 'D:\\KERJA\\Bantu Teman\\smartglass-ocr-api\\lib\\utils.py', reloading
+2025-05-04 00:47:58,734 - INFO -  * Restarting with stat
+2025-05-04 00:48:08,439 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-04 00:48:13,880 - WARNING -  * Debugger is active!
+2025-05-04 00:48:13,892 - INFO -  * Debugger PIN: 409-810-023
+2025-05-04 00:49:09,875 - INFO -  * Detected change in 'D:\\KERJA\\Bantu Teman\\smartglass-ocr-api\\app\\api\\utils.py', reloading
+2025-05-04 00:49:10,933 - INFO -  * Restarting with stat
+2025-05-04 00:49:19,701 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-04 00:49:25,118 - WARNING -  * Debugger is active!
+2025-05-04 00:49:25,130 - INFO -  * Debugger PIN: 409-810-023
+2025-05-04 00:50:30,153 - INFO -  * Detected change in 'D:\\KERJA\\Bantu Teman\\smartglass-ocr-api\\app\\api\\routes.py', reloading
+2025-05-04 00:50:31,523 - INFO -  * Restarting with stat
+2025-05-04 00:50:49,962 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-04 00:50:53,060 - INFO - EasyOCR initialized successfully
+2025-05-04 00:50:57,503 - WARNING -  * Debugger is active!
+2025-05-04 00:50:57,512 - INFO -  * Debugger PIN: 409-810-023
+2025-05-04 00:53:58,439 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-04 00:55:21,775 - INFO - 127.0.0.1 - - [04/May/2025 00:55:21] "POST /api/process HTTP/1.1" 200 -
+2025-05-04 00:55:55,881 - INFO -  * Detected change in 'D:\\KERJA\\Bantu Teman\\smartglass-ocr-api\\lib\\image_processing.py', reloading
+2025-05-04 00:55:57,490 - INFO -  * Restarting with stat

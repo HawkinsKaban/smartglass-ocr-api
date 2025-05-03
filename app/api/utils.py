@@ -62,3 +62,32 @@ def get_markdown_files() -> List[Dict[str, Any]]:
             })
     
     return sorted(md_files, key=lambda x: x['created'], reverse=True)
+
+def convert_numpy_types(obj: Any) -> Any:
+    """
+    Convert NumPy types to Python native types for JSON serialization
+    
+    Args:
+        obj: Object to convert
+        
+    Returns:
+        Object converted to Python native types
+    """
+    import numpy as np
+    
+    if isinstance(obj, dict):
+        return {k: convert_numpy_types(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [convert_numpy_types(item) for item in obj]
+    elif isinstance(obj, tuple):
+        return tuple(convert_numpy_types(item) for item in obj)
+    elif isinstance(obj, np.integer):
+        return int(obj)
+    elif isinstance(obj, np.floating):
+        return float(obj)
+    elif isinstance(obj, np.ndarray):
+        return convert_numpy_types(obj.tolist())
+    elif isinstance(obj, np.bool_):
+        return bool(obj)
+    else:
+        return obj

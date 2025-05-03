@@ -981,9 +981,15 @@ class ImageProcessor:
         # Edge emphasizing for better text detection in natural scenes
         edges = cv2.Canny(contrast_enhanced, 30, 120)
         dilated_edges = cv2.dilate(edges, np.ones((2,2), np.uint8), iterations=1)
-        edge_enhanced = cv2.addWeighted(contrast_enhanced, 0.7, dilated_edges.astype(np.float32), 0.3, 0)
-        image_data["edge_enhanced"] = edge_enhanced.astype(np.uint8)
-        processed_images.append("edge_enhanced")
+        try:
+            dilated_edges_float = dilated_edges.astype(np.float32)
+            contrast_enhanced_float = contrast_enhanced.astype(np.float32)
+            edge_enhanced = cv2.addWeighted(contrast_enhanced_float, 0.7, dilated_edges_float, 0.3, 0)
+            image_data["edge_enhanced"] = edge_enhanced.astype(np.uint8)
+        except Exception as e:
+            # Jika gagal, gunakan gambar asli saja
+            image_data["edge_enhanced"] = contrast_enhanced
+            logger.warning(f"Edge enhancement failed: {e}, using original image")
         
         # Shadow removal technique for outdoor scenes
         _, thresh = cv2.threshold(contrast_enhanced, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
@@ -1072,7 +1078,7 @@ class ImageProcessor:
         # Enhance text edges for better recognition
         edges = cv2.Canny(denoised, 50, 150)
         dilated_edges = cv2.dilate(edges, np.ones((2, 2), np.uint8), iterations=1)
-        edge_enhanced = cv2.addWeighted(denoised, 0.8, dilated_edges.astype(np.float32), 0.2, 0)
+        edge_enhanced = cv2.addWeighted(denoised.astype(np.float32), 0.8, dilated_edges.astype(np.float32), 0.2, 0).astype(np.uint8)
         image_data["edge_enhanced"] = edge_enhanced.astype(np.uint8)
         processed_images.append("edge_enhanced")
         

@@ -370,3 +370,32 @@ def order_points(pts):
     
     # Return the coordinates in order: top-left, top-right, bottom-right, bottom-left
     return np.array([tl, tr, br, bl], dtype=np.float32)
+
+def convert_numpy_types(obj):
+    """
+    Mengkonversi tipe data NumPy ke tipe data Python native untuk JSON serialization
+    
+    Args:
+        obj: Object yang akan dikonversi
+        
+    Returns:
+        Object yang sudah dikonversi ke tipe data Python native
+    """
+    import numpy as np
+    
+    if isinstance(obj, dict):
+        return {k: convert_numpy_types(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [convert_numpy_types(item) for item in obj]
+    elif isinstance(obj, tuple):
+        return tuple(convert_numpy_types(item) for item in obj)
+    elif isinstance(obj, np.integer):
+        return int(obj)
+    elif isinstance(obj, np.floating):
+        return float(obj)
+    elif isinstance(obj, np.ndarray):
+        return convert_numpy_types(obj.tolist())
+    elif isinstance(obj, np.bool_):
+        return bool(obj)
+    else:
+        return obj

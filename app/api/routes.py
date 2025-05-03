@@ -11,7 +11,7 @@ from datetime import datetime
 from flask import Blueprint, request, jsonify, send_file, Response, current_app
 
 from app.core.ocr_processor import OCRProcessor
-from app.api.utils import allowed_file, generate_unique_filename, get_markdown_files
+from app.api.utils import allowed_file, generate_unique_filename, get_markdown_files, convert_numpy_types
 
 # Configure logging
 logger = logging.getLogger("API-Routes")
@@ -153,6 +153,9 @@ def process_file_worker(task_id, file_path, original_filename, language, page, s
             summary_length=summary_length,
             summary_style=summary_style
         )
+        
+        # Convert NumPy types to Python types for JSON serialization
+        results = convert_numpy_types(results)
         
         # Update task status to complete
         active_tasks[task_id] = {
@@ -324,6 +327,9 @@ def process_file():
                     summary_style=summary_style
                 )
                 
+                # Convert NumPy types to Python types for JSON serialization
+                results = convert_numpy_types(results)
+                
                 # Prepare response
                 response = {
                     'status': results.get('status', 'success'),
@@ -402,6 +408,9 @@ def check_task_status(task_id):
     if task['status'] in ['complete', 'error']:
         response = task['response']
         
+        # Convert NumPy types to Python types for JSON serialization
+        response = convert_numpy_types(response)
+        
         # Task is complete, remove from active tasks after a delay
         # Keep task info for a short time in case client checks again
         def cleanup_task():
@@ -447,7 +456,8 @@ def list_markdown_files():
 @api_bp.route('/markdown/<filename>', methods=['GET'])
 def get_markdown_file(filename):
     """Get a specific markdown file, either as download or raw content"""
-    file_path = os.path.join(current_app.config['MARKDOWN_FOLDER'], filename)
+    # Normalize path with os.path.normpath to handle path separators consistently
+    file_path = os.path.normpath(os.path.join(current_app.config['MARKDOWN_FOLDER'], filename))
     
     # Check if file exists
     if not os.path.exists(file_path):
@@ -470,6 +480,10 @@ def get_markdown_file(filename):
 def get_stats():
     """Get OCR engine statistics"""
     stats = ocr_processor.get_statistics()
+    
+    # Convert NumPy types to Python types for JSON serialization
+    stats = convert_numpy_types(stats)
+    
     api_stats = {
         'api_version': '1.1',  # Updated version
         'ocr_engine': stats,
