@@ -561,49 +561,123 @@ class InformationExtractor:
         
         return info
 
-    def organize_output(results: dict) -> dict:
-        """
-        Organize OCR results in a clean, structured format
+def organize_output(results: dict) -> dict:
+    """
+    Organize OCR results in a clean, structured format
         
-        Args:
-            results: OCR results dictionary
+    Args:
+        esults: OCR results dictionary
+        
+    Returns:
+    Organized results dictionary
+    """
+    # If results already has an error status, return it unchanged
+    if results.get("status") == "error":
+        return results
+    
+    # Make a copy of the results to avoid modifying the original
+    organized = results.copy()
+    
+    # Ensure required fields exist
+    if "text" not in organized:
+        organized["text"] = ""
+    if "confidence" not in organized:
+        organized["confidence"] = 0.0
+    if "metadata" not in organized:
+        organized["metadata"] = {}
+    
+    # Clean up metadata section
+    if "metadata" in organized:
+        # Remove redundant or empty fields
+        metadata = organized["metadata"]
+        # Ensure all required metadata fields exist
+        if "detected_language" not in metadata:
+            metadata["detected_language"] = "unknown"
+        if "image_type" not in metadata:
+            metadata["image_type"] = "unknown"
+        if "best_engine" not in metadata:
+            metadata["best_engine"] = "unknown"
+        # Keep processing time if it exists
+        if "processing_time_ms" not in metadata:
+            metadata["processing_time_ms"] = 0.0
+    
+    # Add a timestamp to the organized results
+    import time
+    from datetime import datetime
+    organized["timestamp"] = datetime.now().isoformat()
+    
+    # Format confidence score for better readability
+    organized["confidence_level"] = _format_confidence_level(organized.get("confidence", 0))
+    
+    # Organize structured information if available
+    if "metadata" in organized and "structured_info" in organized["metadata"]:
+        structured_info = organized["metadata"]["structured_info"]
+        if structured_info:
+            # Keep original structured info but add a formatted version
+            organized["metadata"]["formatted_info"] = _format_structured_info(structured_info)
+    
+    return organized
+
+def _format_confidence_level(confidence: float) -> str:
+    """
+    Format confidence score into a descriptive level
+    
+    Args:
+        confidence: Raw confidence score (0-100)
+        
+    Returns:
+        String description of confidence level
+    """
+    if confidence >= 90:
+        return "Very High"
+    elif confidence >= 75:
+        return "High"
+    elif confidence >= 60:
+        return "Good"
+    elif confidence >= 40:
+        return "Moderate"
+    elif confidence >= 20:
+        return "Low"
+    else:
+        return "Very Low"
+
+def _format_structured_info(info: dict) -> dict:
+    """
+    Format structured information for better readability
+    
+    Args:
+        info: Extracted structured information
+        
+    Returns:
+        Formatted structured information
+    """
+    if not info:
+        return {}
+    
+    formatted = {}
+    
+    # Format ID card information
+    if "name" in info or "id_number" in info:
+        formatted["id_card"] = {k: v for k, v in info.items() if k in [
+            "name", "id_number", "date_of_birth", "gender", "address",
+            "expiration_date", "issue_date", "nationality"
+        ]}
+    
+    # Format receipt information
+    if "merchant" in info or "total" in info:
+        receipt_info = {k: v for k, v in info.items() if k in [
+            "merchant", "date", "time", "subtotal", "tax", "total"
+        ]}
+        
+        # Format items if available
+        if "items" in info and isinstance(info["items"], list):
+            receipt_info["items_count"] = len(info["items"])
+            receipt_info["items"] = info["items"]
             
-        Returns:
-            Organized results dictionary
-        """
-        # If results already has an error status, return it unchanged
-        if results.get("status") == "error":
-            return results
+        formatted["receipt"] = receipt_info
+    
+    # If no specific type was detected, include all fields
+    if not formatted:
+        formatted["general"] = info
         
-        # Make a copy of the results to avoid modifying the original
-        organized = results.copy()
-        
-        # Ensure required fields exist
-        if "text" not in organized:
-            organized["text"] = ""
-        if "confidence" not in organized:
-            organized["confidence"] = 0.0
-        if "metadata" not in organized:
-            organized["metadata"] = {}
-        
-        # Clean up metadata section
-        if "metadata" in organized:
-            # Remove redundant or empty fields
-            metadata = organized["metadata"]
-            # Ensure all required metadata fields exist
-            if "detected_language" not in metadata:
-                metadata["detected_language"] = "unknown"
-            if "image_type" not in metadata:
-                metadata["image_type"] = "unknown"
-            if "best_engine" not in metadata:
-                metadata["best_engine"] = "unknown"
-            # Keep processing time if it exists
-            if "processing_time_ms" not in metadata:
-                metadata["processing_time_ms"] = 0.0
-        
-        # Add a timestamp to the organized results
-        import time
-        from datetime import datetime
-        organized["timestamp"] = datetime.now().isoformat()
-        
-        return organized
+    return formatted

@@ -74,9 +74,9 @@ class TextProcessor:
         """
         self.config = config or {}
     
-    def post_process_text(self, text: str, image_type: ImageType) -> str:
+    def post_process_text(text: str, image_type) -> str:
         """
-        Apply enhanced rule-based post-processing to extracted text
+        Apply rule-based post-processing to extracted text
         
         Args:
             text: Extracted text
@@ -88,30 +88,62 @@ class TextProcessor:
         if not text:
             return ""
         
-        # Apply specific corrections based on image type
-        if image_type == ImageType.RECEIPT:
-            # Fix common receipt OCR errors
-            text = self._fix_receipt_text(text)
-        elif image_type == ImageType.ID_CARD:
-            # Fix common ID card OCR errors
-            text = self._fix_id_card_text(text)
-        elif image_type == ImageType.SCIENTIFIC:
-            # Fix formula and scientific notation
-            text = self._fix_scientific_text(text)
-        elif image_type == ImageType.FORM:
-            # Fix form field text
-            text = self._fix_form_text(text)
-        elif image_type == ImageType.TABLE:
-            # Fix table text
-            text = self._fix_table_text(text)
+        # Remove invalid unicode characters
+        text = ''.join(c for c in text if ord(c) < 65536)
         
-        # Apply general text corrections
-        text = self._apply_general_text_corrections(text)
+        # Fix quotes and apostrophes
+        text = text.replace('"', '"').replace('"', '"')
+        text = text.replace("''", '"').replace(",,", '"')
+        text = text.replace("'", "'").replace("`", "'")
         
-        # Enhance text organization
-        text = self._enhance_text_organization(text, image_type)
+        # Fix bullet points and normalize them
+        text = re.sub(r'[\*\+\-‣▪•●·](?:\s+|\n)', '• ', text)
         
-        return text
+        # Fix common OCR letter confusions
+        text = re.sub(r'(?<=\d)l(?=\d)', '1', text)  # Digit + l + digit → 1
+        text = re.sub(r'(?<=\d)I(?=\d)', '1', text)  # Digit + I + digit → 1
+        text = re.sub(r'(?<=\d)O(?=\d)', '0', text)  # Digit + O + digit → 0
+        text = re.sub(r'(?<=\d)S(?=\d)', '5', text)  # Digit + S + digit → 5
+        text = re.sub(r'(?<=\d)Z(?=\d)', '2', text)  # Digit + Z + digit → 2
+        text = re.sub(r'(?<=\d)B(?=\d)', '8', text)  # Digit + B + digit → 8
+        
+        # Fix space issues
+        text = re.sub(r'(?<=[a-z])(?=[A-Z])', ' ', text)  # No space between word and capital letter
+        text = re.sub(r'(?<=[a-zA-Z])(?=\d)', ' ', text)  # No space between letter and digit
+        text = re.sub(r'(?<=\d)(?=[a-zA-Z])', ' ', text)  # No space between digit and letter
+        
+        # Fix multiple spaces
+        text = re.sub(r' +', ' ', text)
+        
+        # Fix spacing after punctuation
+        text = re.sub(r'([.!?,:;])([A-Z0-9])', r'\1 \2', text)
+        
+        # Fix common merged words
+        text = re.sub(r'([a-z])([A-Z])', r'\1 \2', text)
+        
+        # Fix newlines - remove excessive newlines
+        text = re.sub(r'\n{3,}', '\n\n', text)
+        
+        # Fix hyphens at line breaks
+        text = re.sub(r'(\w+)-\n(\w+)', r'\1\2', text)
+        
+        # Specific processing based on image type
+        if hasattr(image_type, 'value'):
+            image_type_value = image_type.value.lower()
+            if 'receipt' in image_type_value:
+                # Apply receipt-specific corrections
+                text = _fix_receipt_text(text)
+            elif 'id_card' in image_type_value:
+                # Apply ID card-specific corrections
+                text = _fix_id_card_text(text)
+            elif 'form' in image_type_value:
+                # Apply form-specific corrections
+                text = _fix_form_text(text)
+            elif 'table' in image_type_value:
+                # Apply table-specific corrections
+                text = _fix_table_text(text)
+        
+        return text.strip()
     
     def _fix_receipt_text(self, text: str) -> str:
         """
