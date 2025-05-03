@@ -352,26 +352,41 @@ class EasyOCR:
             except:
                 pass
             
-            if not results:
+            # Validasi hasil
+            if not results or not isinstance(results, list):
                 return "", 0, "no_text", []
             
             # Process results based on format (depends on paragraph mode)
             if paragraph:
                 # Paragraph mode returns combined text blocks
-                text = " ".join([r[1] for r in results if r[1].strip()])
-                confidences = [r[2] * 100 for r in results if r[1].strip()]  # Scale to 0-100
-                regions = [{"bbox": r[0], "text": r[1], "confidence": r[2] * 100} for r in results if r[1].strip()]
+                text_parts = []
+                confidences = []
+                regions = []
+                
+                for r in results:
+                    # Validasi struktur hasil
+                    if isinstance(r, (list, tuple)) and len(r) >= 3:
+                        bbox, text, conf = r[0], r[1], r[2]
+                        if isinstance(text, str) and text.strip():
+                            text_parts.append(text)
+                            confidences.append(conf * 100)  # Scale to 0-100
+                            regions.append({"bbox": bbox, "text": text, "confidence": conf * 100})
+                
+                text = " ".join(text_parts)
             else:
                 # Extract text and confidence
                 texts = []
                 confidences = []
                 regions = []
                 
-                for (bbox, text, conf) in results:
-                    if text.strip():
-                        texts.append(text)
-                        confidences.append(conf * 100)  # Scale to 0-100
-                        regions.append({"bbox": bbox, "text": text, "confidence": conf * 100})
+                for r in results:
+                    # Validasi struktur hasil
+                    if isinstance(r, (list, tuple)) and len(r) >= 3:
+                        bbox, text, conf = r[0], r[1], r[2]
+                        if isinstance(text, str) and text.strip():
+                            texts.append(text)
+                            confidences.append(conf * 100)  # Scale to 0-100
+                            regions.append({"bbox": bbox, "text": text, "confidence": conf * 100})
                 
                 # Join text with appropriate spacing
                 text = ' '.join(texts)
@@ -386,7 +401,7 @@ class EasyOCR:
             regions.sort(key=lambda r: r["bbox"][0][1])  # Sort by y-coordinate of top-left point
             
             logger.info(f"EasyOCR result: {len(regions)} text regions, "
-                      f"Confidence: {avg_confidence:.1f}")
+                    f"Confidence: {avg_confidence:.1f}")
             
             return text, avg_confidence, "enhanced", regions
             
@@ -471,7 +486,7 @@ class PaddleOCR:
             rec_model_dir = None  # Default model
             
             # Perform OCR with PaddleOCR
-            results = self.paddle_ocr.ocr(temp_path, cls=use_angle_cls, rec_model_dir=rec_model_dir)
+            results = self.paddle_ocr.ocr(temp_path, cls=use_angle_cls)
             
             # Clean up temporary file
             try:
@@ -806,7 +821,8 @@ class OCREngineManager:
         
         # Text quality factor - check for gibberish or nonsensical text
         # Simple heuristic: high ratio of non-alphanumeric characters often indicates poor OCR
-        clean_text = text.replace(" ", "").replace("\n", "")
+        import re
+        clean_text = re.sub(r'\s+', '', text)
         if clean_text:
             non_alnum_ratio = sum(1 for c in clean_text if not c.isalnum()) / len(clean_text)
             if non_alnum_ratio > 0.4:
@@ -980,7 +996,7 @@ class OCREngineManager:
             # 3. Try document warping as a last resort
             warping_result = None
             try:
-                # Use utilities.order_points
+                # Import order_points from utils
                 from .utils import order_points
                 
                 # Apply document warping
@@ -1077,7 +1093,13 @@ class OCREngineManager:
                 
                 return best["text"], best["confidence"], best["method"], {}
             
-            # If no results from advanced methods, try one more desperate approach
+            # If region results are available but no other methods worked, use them
+            if region_results:
+                region_results.sort(key=lambda x: x["region"][1])
+                region_text = "\n".join([r["text"] for r in region_results])
+                return region_text, 50.0, "region_only", {"regions": region_results}
+            
+            # If nothing worked, try one more desperate approach
             # Extreme binarization with multiple thresholds
             best_text = ""
             best_confidence = 0

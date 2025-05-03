@@ -1458,3 +1458,90 @@ ImportError: cannot import name 'generate_summary' from 'lib.text_processing' (D
 2025-05-04 00:01:30,447 - INFO - FakeTensor cache stats:
 2025-05-04 00:01:30,448 - INFO -   cache_hits: 0
 2025-05-04 00:01:30,448 - INFO -   cache_misses: 0
+2025-05-04 00:02:13,913 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-04 00:02:16,545 - INFO - EasyOCR initialized successfully
+2025-05-04 00:02:22,005 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.8.192:5000
+2025-05-04 00:02:22,005 - INFO - [33mPress CTRL+C to quit[0m
+2025-05-04 00:02:22,010 - INFO -  * Restarting with stat
+2025-05-04 00:02:29,580 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-04 00:02:34,694 - WARNING -  * Debugger is active!
+2025-05-04 00:02:34,710 - INFO -  * Debugger PIN: 409-810-023
+2025-05-04 00:04:20,956 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-04 00:05:08,350 - ERROR - PaddleOCR error: PaddleOCR.ocr() got an unexpected keyword argument 'rec_model_dir'
+2025-05-04 00:05:17,125 - ERROR - EasyOCR error: list index out of range
+2025-05-04 00:05:17,361 - INFO - 127.0.0.1 - - [04/May/2025 00:05:17] "POST /api/process HTTP/1.1" 200 -
+2025-05-04 00:07:24,216 - INFO -  * Detected change in 'D:\\KERJA\\Bantu Teman\\smartglass-ocr-api\\lib\\ocr_engines.py', reloading
+2025-05-04 00:07:26,345 - INFO -  * Restarting with stat
+2025-05-04 00:07:41,300 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-04 00:07:43,757 - INFO - EasyOCR initialized successfully
+2025-05-04 00:07:48,138 - WARNING -  * Debugger is active!
+2025-05-04 00:07:48,147 - INFO -  * Debugger PIN: 409-810-023
+2025-05-04 00:09:29,070 - INFO -  * Detected change in 'D:\\KERJA\\Bantu Teman\\smartglass-ocr-api\\lib\\ocr_engines.py', reloading
+2025-05-04 00:09:30,265 - INFO -  * Restarting with stat
+2025-05-04 00:09:37,774 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-04 00:09:45,305 - WARNING -  * Debugger is active!
+2025-05-04 00:09:45,353 - INFO -  * Debugger PIN: 409-810-023
+2025-05-04 00:13:30,375 - INFO -  * Detected change in 'D:\\KERJA\\Bantu Teman\\smartglass-ocr-api\\lib\\ocr_engines.py', reloading
+2025-05-04 00:13:32,120 - INFO -  * Restarting with stat
+2025-05-04 00:13:42,843 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-04 00:13:51,218 - WARNING -  * Debugger is active!
+2025-05-04 00:13:51,233 - INFO -  * Debugger PIN: 409-810-023
+2025-05-04 00:14:12,442 - INFO -  * Detected change in 'D:\\KERJA\\Bantu Teman\\smartglass-ocr-api\\lib\\ocr_engines.py', reloading
+2025-05-04 00:14:13,566 - INFO -  * Restarting with stat
+2025-05-04 00:14:22,480 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-04 00:14:29,314 - WARNING -  * Debugger is active!
+2025-05-04 00:14:29,324 - INFO -  * Debugger PIN: 409-810-023
+2025-05-04 00:14:37,718 - INFO -  * Detected change in 'D:\\KERJA\\Bantu Teman\\smartglass-ocr-api\\lib\\ocr_engines.py', reloading
+2025-05-04 00:14:39,106 - INFO -  * Restarting with stat
+2025-05-04 00:14:48,401 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-04 00:14:55,249 - WARNING -  * Debugger is active!
+2025-05-04 00:14:55,260 - INFO -  * Debugger PIN: 409-810-023
+2025-05-04 00:15:07,108 - ERROR - Error processing image: expected 'except' or 'finally' block (ocr_engines.py, line 359)
+2025-05-04 00:15:07,109 - ERROR - Traceback (most recent call last):
+  File "D:\KERJA\Bantu Teman\smartglass-ocr-api\lib\smartglass_ocr.py", line 532, in _process_image
+    from .ocr_engines import OCREngineManager
+  File "D:\KERJA\Bantu Teman\smartglass-ocr-api\lib\ocr_engines.py", line 359
+    if not results or not isinstance(results, list):
+    ^^
+SyntaxError: expected 'except' or 'finally' block
+
+2025-05-04 00:15:07,115 - INFO - 127.0.0.1 - - [04/May/2025 00:15:07] "POST /api/process HTTP/1.1" 200 -
+2025-05-04 00:15:21,041 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-04 00:15:26,687 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.8.192:5000
+2025-05-04 00:15:26,688 - INFO - [33mPress CTRL+C to quit[0m
+2025-05-04 00:15:26,695 - INFO -  * Restarting with stat
+2025-05-04 00:15:34,012 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-04 00:15:39,094 - WARNING -  * Debugger is active!
+2025-05-04 00:15:39,105 - INFO -  * Debugger PIN: 409-810-023
+2025-05-04 00:15:45,245 - ERROR - Error processing image: expected 'except' or 'finally' block (ocr_engines.py, line 359)
+2025-05-04 00:15:45,245 - ERROR - Traceback (most recent call last):
+  File "D:\KERJA\Bantu Teman\smartglass-ocr-api\lib\smartglass_ocr.py", line 532, in _process_image
+    from .ocr_engines import OCREngineManager
+  File "D:\KERJA\Bantu Teman\smartglass-ocr-api\lib\ocr_engines.py", line 359
+    if not results or not isinstance(results, list):
+    ^^
+SyntaxError: expected 'except' or 'finally' block
+
+2025-05-04 00:15:45,250 - INFO - 127.0.0.1 - - [04/May/2025 00:15:45] "POST /api/process HTTP/1.1" 200 -
+2025-05-04 00:17:05,922 - INFO -  * Detected change in 'D:\\KERJA\\Bantu Teman\\smartglass-ocr-api\\lib\\ocr_engines.py', reloading
+2025-05-04 00:17:16,673 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-04 00:17:21,637 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.8.192:5000
+2025-05-04 00:17:21,638 - INFO - [33mPress CTRL+C to quit[0m
+2025-05-04 00:17:21,645 - INFO -  * Restarting with stat
+2025-05-04 00:17:29,781 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-04 00:17:36,868 - WARNING -  * Debugger is active!
+2025-05-04 00:17:36,880 - INFO -  * Debugger PIN: 409-810-023
+2025-05-04 00:17:38,440 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-04 00:18:32,856 - INFO - 127.0.0.1 - - [04/May/2025 00:18:32] "POST /api/process HTTP/1.1" 200 -
+2025-05-04 00:19:27,697 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-04 00:19:41,733 - ERROR - EasyOCR error: [enforce fail at alloc_cpu.cpp:116] data. DefaultCPUAllocator: not enough memory: you tried to allocate 1195376640 bytes.
+2025-05-04 00:19:57,113 - INFO - 127.0.0.1 - - [04/May/2025 00:19:57] "POST /api/process HTTP/1.1" 200 -
