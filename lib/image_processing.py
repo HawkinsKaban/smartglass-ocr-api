@@ -218,83 +218,130 @@ class ImageProcessor:
         
         return processed_images, image_data
     
-    # Add the new preprocessing method for signage
     def _preprocess_signage(self, base_image, image_data, processed_images):
         """
         Optimized preprocessing for outdoor signage and banners
-        
-        Args:
-            base_image: Base image to process
-            image_data: Dictionary to store processed images
-            processed_images: List to track processing methods
         """
-        # 1. Apply adaptive histogram equalization for better contrast in varying lighting
+        # 1. Apply CLAHE for better contrast in varying lighting
         clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(8, 8))
         contrast_enhanced = clahe.apply(base_image)
         image_data["contrast_enhanced"] = contrast_enhanced
         processed_images.append("contrast_enhanced")
         
-        # 2. Apply bilateral filter to reduce noise while preserving edges
-        bilateral = cv2.bilateralFilter(contrast_enhanced, 9, 75, 75)
-        image_data["bilateral"] = bilateral
-        processed_images.append("bilateral")
+        # 2. Enhanced denoising for camera images
+        denoised = cv2.fastNlMeansDenoising(contrast_enhanced, None, 7, 7, 21)
+        image_data["denoised"] = denoised
+        processed_images.append("denoised")
         
-        # 3. Apply adaptive thresholding to handle uneven lighting
-        adaptive = cv2.adaptiveThreshold(bilateral, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, 
-                                       cv2.THRESH_BINARY, 15, 8)
-        image_data["adaptive"] = adaptive
-        processed_images.append("adaptive")
+        # 3. Sharpening to enhance text clarity
+        kernel = np.array([[-1,-1,-1], [-1,9,-1], [-1,-1,-1]])
+        sharpened = cv2.filter2D(denoised, -1, kernel)
+        image_data["sharpened"] = sharpened
+        processed_images.append("sharpened")
         
-        # 4. Try Otsu thresholding as well
-        _, otsu = cv2.threshold(contrast_enhanced, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+        # 4. Multiple thresholding methods for signage
+        # Otsu thresholding
+        _, otsu = cv2.threshold(sharpened, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
         image_data["otsu"] = otsu
         processed_images.append("otsu")
         
-        # 5. Special processing for reflective/glare conditions
-        # Detect bright spots that might be glare
-        _, bright_mask = cv2.threshold(base_image, 220, 255, cv2.THRESH_BINARY)
+        # Adaptive thresholding (good for uneven lighting)
+        adaptive_mean = cv2.adaptiveThreshold(sharpened, 255, cv2.ADAPTIVE_THRESH_MEAN_C, 
+                                             cv2.THRESH_BINARY, 15, 5)
+        image_data["adaptive_mean"] = adaptive_mean
+        processed_images.append("adaptive_mean")
         
-        # If glare is detected, apply special processing
-        if np.count_nonzero(bright_mask) > 0.05 * base_image.size:
-            # Create a mask of glare areas (dilated to cover full glare area)
-            kernel = np.ones((7, 7), np.uint8)
-            glare_mask = cv2.dilate(bright_mask, kernel, iterations=2)
-            
-            # Use inpainting to remove glare
-            glare_reduced = cv2.inpaint(base_image, glare_mask, 5, cv2.INPAINT_TELEA)
-            image_data["glare_reduced"] = glare_reduced
-            processed_images.append("glare_reduced")
-            
-            # Apply thresholding on glare-reduced image
-            _, glare_otsu = cv2.threshold(glare_reduced, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-            image_data["glare_otsu"] = glare_otsu
-            processed_images.append("glare_otsu")
+        adaptive_gaussian = cv2.adaptiveThreshold(sharpened, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, 
+                                                cv2.THRESH_BINARY, 15, 8)
+        image_data["adaptive_gaussian"] = adaptive_gaussian
+        processed_images.append("adaptive_gaussian")
         
-        # 6. Try morphological operations to enhance text
+        # 5. Color-based segmentation for signs
+        if len(base_image.shape) == 2:
+            # Convert grayscale to BGR for color processing
+            color_img = cv2.cvtColor(base_image, cv2.COLOR_GRAY2BGR)
+        else:
+            color_img = base_image
+        
+        # Convert to HSV for better color segmentation
+        hsv = cv2.cvtColor(color_img, cv2.COLOR_BGR2HSV)
+        
+        # Extract text based on color ranges (common sign colors)
+        color_ranges = [
+            # Red text on signs
+            ((0, 100, 100), (10, 255, 255)),
+            ((170, 100, 100), (180, 255, 255)),
+            # Blue text
+            ((100, 100, 100), (130, 255, 255)),
+            # Green text
+            ((40, 100, 100), (80, 255, 255)),
+            # White text (common on signs)
+            ((0, 0, 200), (180, 30, 255)),
+            # Black text
+            ((0, 0, 0), (180, 255, 50))
+        ]
+        
+        color_masks = []
+        for lower, upper in color_ranges:
+            mask = cv2.inRange(hsv, np.array(lower), np.array(upper))
+            if np.count_nonzero(mask) > 100:  # Only if there's significant content
+                color_masks.append(mask)
+        
+        if color_masks:
+            combined_color_mask = np.zeros_like(color_masks[0])
+            for mask in color_masks:
+                combined_color_mask = cv2.bitwise_or(combined_color_mask, mask)
+            
+            # Clean up the mask
+            kernel = np.ones((3, 3), np.uint8)
+            cleaned_mask = cv2.morphologyEx(combined_color_mask, cv2.MORPH_CLOSE, kernel)
+            cleaned_mask = cv2.morphologyEx(cleaned_mask, cv2.MORPH_OPEN, kernel)
+            
+            image_data["color_segmented"] = cleaned_mask
+            processed_images.append("color_segmented")
+        
+        # 6. Perspective correction for angled shots
+        try:
+            corrected = self._try_perspective_correction(base_image)
+            if corrected is not None:
+                image_data["perspective_corrected"] = corrected
+                processed_images.append("perspective_corrected")
+                
+                # Also threshold the corrected image
+                _, corrected_otsu = cv2.threshold(corrected, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+                image_data["corrected_otsu"] = corrected_otsu
+                processed_images.append("corrected_otsu")
+        except Exception as e:
+            logger.warning(f"Perspective correction failed: {e}")
+        
+        # 7. Multi-scale processing for varying text sizes
+        scales = [0.5, 1.0, 1.5, 2.0]
+        for scale in scales:
+            if scale != 1.0:
+                h, w = sharpened.shape[:2]
+                scaled = cv2.resize(sharpened, (int(w * scale), int(h * scale)), 
+                                  interpolation=cv2.INTER_CUBIC if scale > 1 else cv2.INTER_AREA)
+                
+                _, scaled_otsu = cv2.threshold(scaled, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+                # Resize back to original size
+                scaled_result = cv2.resize(scaled_otsu, (w, h), interpolation=cv2.INTER_CUBIC)
+                
+                image_data[f"scaled_{scale}"] = scaled_result
+                processed_images.append(f"scaled_{scale}")
+        
+        # 8. Edge-enhanced text extraction
+        edges = cv2.Canny(sharpened, 50, 150)
         kernel = np.ones((2, 2), np.uint8)
-        morph_open = cv2.morphologyEx(adaptive, cv2.MORPH_OPEN, kernel)
-        image_data["morph_open"] = morph_open
-        processed_images.append("morph_open")
+        dilated_edges = cv2.dilate(edges, kernel, iterations=1)
         
-        # 7. Edge enhancement for clearer text boundaries
-        edges = cv2.Canny(bilateral, 30, 130)
-        edge_dilated = cv2.dilate(edges, kernel, iterations=1)
-        # Convert edges to float32 to avoid overflow in addWeighted
-        edges_float = edge_dilated.astype(np.float32)
-        edge_enhanced = cv2.addWeighted(base_image, 0.7, edges_float, 0.3, 0).astype(np.uint8)
-        image_data["edge_enhanced"] = edge_enhanced
-        processed_images.append("edge_enhanced")
+        # Combine edges with the original for better text detection
+        edge_enhanced = cv2.addWeighted(contrast_enhanced.astype(np.float32), 0.7, 
+                                      dilated_edges.astype(np.float32), 0.3, 0)
+        _, edge_binary = cv2.threshold(edge_enhanced.astype(np.uint8), 0, 255, 
+                                     cv2.THRESH_BINARY + cv2.THRESH_OTSU)
         
-        # 8. Try perspective correction if there's a clear rectangular shape
-        corrected = self._try_perspective_correction(base_image)
-        if corrected is not None:
-            image_data["perspective_corrected"] = corrected
-            processed_images.append("perspective_corrected")
-            
-            # Apply Otsu to the corrected image
-            _, corrected_otsu = cv2.threshold(corrected, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-            image_data["corrected_otsu"] = corrected_otsu
-            processed_images.append("corrected_otsu")
+        image_data["edge_binary"] = edge_binary
+        processed_images.append("edge_binary")
     
     def _try_perspective_correction(self, image):
         """
@@ -737,17 +784,7 @@ class ImageProcessor:
                            text_confidence) -> ImageType:
         """
         Determine the type of image with enhanced classification
-        
-        Args:
-            Various image characteristics
-            
-        Returns:
-            ImageType enum representing the image type
         """
-        # Define weighted characteristics for image types
-        # Each characteristic has a weight and a range of values for each image type
-        
-        # Calculate scores for each image type
         scores = {}
         
         # Check if the image is blurry or low quality
@@ -755,6 +792,41 @@ class ImageProcessor:
             scores[ImageType.LOW_QUALITY] = 100
         else:
             scores[ImageType.LOW_QUALITY] = max(0, 100 - blur/10)
+        
+        # Check for signage (ENHANCED - prioritize signage detection)
+        signage_score = 0
+        
+        # 1. Check aspect ratio (many signs are wide or tall)
+        if (width > 1.8*height or height > 1.8*width):
+            signage_score += 30
+        
+        # 2. Check contrast and color variance (signs have high contrast/colors)
+        if contrast > 50:
+            signage_score += 30
+        if color_variance > 20:
+            signage_score += 20
+        
+        # 3. Check text regions (signs have fewer but larger text)
+        if 1 <= len(text_regions) <= 10:
+            signage_score += 20
+        
+        # 4. Check edge density (signs have clear boundaries)
+        if 0.05 < edge_density < 0.15:
+            signage_score += 20
+        
+        # 5. Check brightness (outdoor signs often have good lighting)
+        if brightness > 100:
+            signage_score += 10
+        
+        # 6. Check blur (camera images might have some blur)
+        if blur > 1000:  # Higher threshold for camera images
+            signage_score += 10
+        
+        # 7. Check text confidence (even if OCR confidence is low, might be signage)
+        if text_confidence > 50:
+            signage_score += 10
+        
+        scores[ImageType.SIGNAGE] = signage_score
         
         # Check for ID card (specific aspect ratio, multiple text regions)
         id_card_score = 0
@@ -792,15 +864,6 @@ class ImageProcessor:
             if text_confidence > 80:
                 high_contrast_score += 20
         scores[ImageType.HIGH_CONTRAST] = high_contrast_score
-        
-        # Check for signage
-        signage_score = 0
-        if (width > 2*height or height > 2*width) and edge_density < 0.1 and contrast > 50:
-            signage_score = 70
-            # Signs typically have large text with high contrast
-            if text_confidence > 70 and len(text_regions) < 5 and color_variance > 20:
-                signage_score += 30
-        scores[ImageType.SIGNAGE] = signage_score
         
         # Check for handwritten text
         handwritten_score = 0
@@ -875,6 +938,14 @@ class ImageProcessor:
         table_score = table_likelihood
         scores[ImageType.TABLE] = table_score
         
+        # Prioritize signage detection
+        if scores[ImageType.SIGNAGE] > 60:
+            return ImageType.SIGNAGE
+        
+        # Special case: if table score is very high, override other types
+        if scores[ImageType.TABLE] > 70:
+            return ImageType.TABLE
+        
         # Get the highest scoring image type
         best_type = max(scores.items(), key=lambda x: x[1])[0]
         
@@ -885,7 +956,7 @@ class ImageProcessor:
             specific_types = [
                 ImageType.ID_CARD, ImageType.RECEIPT, ImageType.SCIENTIFIC, 
                 ImageType.FORM, ImageType.BOOK_PAGE, ImageType.NEWSPAPER,
-                ImageType.TABLE
+                ImageType.TABLE, ImageType.SIGNAGE
             ]
             
             if sorted_scores[1][0] in specific_types and sorted_scores[0][0] not in specific_types:
@@ -894,10 +965,6 @@ class ImageProcessor:
         # Special case: if no type has a strong score, default to MIXED
         if scores[best_type] < 50:
             return ImageType.MIXED
-        
-        # Special case: if table score is very high, override other types
-        if scores[ImageType.TABLE] > 70:
-            return ImageType.TABLE
         
         return best_type
     
@@ -996,6 +1063,48 @@ class ImageProcessor:
             # Apply contrast enhancement to recover details
             clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
             return clahe.apply(glare_reduced)
+    
+    def _detect_camera_issues(self, image):
+        """
+        Detect common issues with camera images
+        """
+        issues = {
+            'motion_blur': False,
+            'low_light': False,
+            'overexposed': False,
+            'perspective_distortion': False
+        }
+        
+        # Check for motion blur
+        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY) if len(image.shape) > 2 else image
+        blur_score = cv2.Laplacian(gray, cv2.CV_64F).var()
+        if blur_score < 100:
+            issues['motion_blur'] = True
+        
+        # Check for low light
+        brightness = np.mean(gray)
+        if brightness < 50:
+            issues['low_light'] = True
+        elif brightness > 200:
+            issues['overexposed'] = True
+        
+        # Check for perspective distortion
+        edges = cv2.Canny(gray, 50, 150)
+        lines = cv2.HoughLinesP(edges, 1, np.pi/180, 50, minLineLength=50, maxLineGap=10)
+        
+        if lines is not None:
+            angles = []
+            for line in lines:
+                x1, y1, x2, y2 = line[0]
+                angle = np.degrees(np.arctan2(y2 - y1, x2 - x1))
+                angles.append(angle)
+            
+            # Check if many lines are not horizontal/vertical
+            non_aligned = sum(1 for a in angles if not (abs(a) < 5 or abs(a - 90) < 5 or abs(a + 90) < 5))
+            if non_aligned > len(angles) * 0.3:
+                issues['perspective_distortion'] = True
+        
+        return issues
     
     # Strategy-specific preprocessing methods
     def _preprocess_document(self, base_image, image_data, processed_images):

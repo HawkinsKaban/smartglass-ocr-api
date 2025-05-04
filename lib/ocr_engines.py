@@ -683,6 +683,18 @@ class OCREngineManager:
             else:
                 engine_sequence = [available_engines[0]]
         
+        # Special handling for signage - try multiple engines
+        if image_stats.image_type == ImageType.SIGNAGE:
+            # For signage, always try all available engines
+            engine_sequence = []
+            # Prioritize EasyOCR and PaddleOCR for signage
+            if "easyocr" in available_engines:
+                engine_sequence.append("easyocr")
+            if "paddleocr" in available_engines:
+                engine_sequence.append("paddleocr")
+            if "tesseract" in available_engines:
+                engine_sequence.append("tesseract")
+        
         # Detect layout for better text organization
         layout_info = {
             "document_type": image_stats.image_type.value,
@@ -696,6 +708,7 @@ class OCREngineManager:
         best_text = ""
         best_confidence = 0
         best_engine = ""
+        all_results = []
         
         for engine_name in engine_sequence:
             engine = self.engines[engine_name]
@@ -735,6 +748,15 @@ class OCREngineManager:
             else:
                 continue
             
+            # Store results for all engines if we're processing signage
+            if image_stats.image_type == ImageType.SIGNAGE:
+                all_results.append({
+                    'engine': engine_name,
+                    'text': text,
+                    'confidence': confidence,
+                    'method': method
+                })
+            
             # Update best result if this is better
             weighted_confidence = self._calculate_weighted_confidence(text, confidence, engine_name)
             if weighted_confidence > best_confidence and len(text.strip()) > 0:
@@ -742,10 +764,17 @@ class OCREngineManager:
                 best_confidence = confidence  # Keep original confidence for reporting
                 best_engine = engine_result
             
-            # Early stopping if we have a good result
-            if confidence > 80 and len(text.strip()) > 20:
+            # Early stopping if we have a good result (but not for signage)
+            if image_stats.image_type != ImageType.SIGNAGE and confidence > 80 and len(text.strip()) > 20:
                 logger.info(f"Early stopping with engine {engine_result}, confidence {confidence:.1f}")
                 break
+        
+        # For signage, merge results from multiple engines
+        if image_stats.image_type == ImageType.SIGNAGE and all_results:
+            merged_text = self._merge_ocr_results(all_results)
+            if merged_text and len(merged_text) > len(best_text):
+                best_text = merged_text
+                best_engine = "merged_engines"
         
         # If no good results, try fallback methods
         if best_confidence < 30 or len(best_text.strip()) < 10:
@@ -764,6 +793,55 @@ class OCREngineManager:
                     layout_info.update(fallback_layout)
         
         return best_engine, best_text, best_confidence, layout_info
+    
+    def _merge_ocr_results(self, results: List[Dict]) -> str:
+        """
+        Merge OCR results from multiple engines intelligently
+        """
+        if not results:
+            return ""
+        
+        # Collect all text lines from all results
+        all_lines = []
+        for result in results:
+            if result['text']:
+                lines = result['text'].split('\n')
+                all_lines.extend([line.strip() for line in lines if line.strip()])
+        
+        if not all_lines:
+            return ""
+        
+        # Remove duplicates while preserving order
+        unique_lines = []
+        seen = set()
+        
+        for line in all_lines:
+            # Normalize for comparison
+            normalized = line.lower().replace(' ', '')
+            if normalized not in seen:
+                seen.add(normalized)
+                unique_lines.append(line)
+        
+        # Sort lines by length (longer lines might be more complete)
+        unique_lines.sort(key=len, reverse=True)
+        
+        # Merge similar lines
+        merged_lines = []
+        for line in unique_lines:
+            # Check if this line is a substring of an existing merged line
+            is_substring = False
+            for i, merged in enumerate(merged_lines):
+                if line.lower() in merged.lower() or merged.lower() in line.lower():
+                    # Keep the longer version
+                    if len(line) > len(merged):
+                        merged_lines[i] = line
+                    is_substring = True
+                    break
+            
+            if not is_substring:
+                merged_lines.append(line)
+        
+        return '\n'.join(merged_lines)
     
     def _calculate_weighted_confidence(self, text: str, raw_confidence: float, engine: str) -> float:
         """

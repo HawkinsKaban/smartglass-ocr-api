@@ -1809,3 +1809,24 @@ TypeError: ImageProcessor._preprocess_multi_column() takes 4 positional argument
 2025-05-05 03:29:04,471 - INFO -  * Debugger PIN: 409-810-023
 2025-05-05 03:29:06,808 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
 2025-05-05 03:29:44,664 - INFO - 127.0.0.1 - - [05/May/2025 03:29:44] "POST /api/process HTTP/1.1" 200 -
+2025-05-05 03:49:53,144 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-05 03:49:55,510 - INFO - EasyOCR initialized successfully
+2025-05-05 03:49:59,475 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.8.192:5000
+2025-05-05 03:49:59,476 - INFO - [33mPress CTRL+C to quit[0m
+2025-05-05 03:49:59,481 - INFO -  * Restarting with stat
+2025-05-05 03:50:06,036 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-05 03:50:10,636 - WARNING -  * Debugger is active!
+2025-05-05 03:50:10,659 - INFO -  * Debugger PIN: 409-810-023
+2025-05-05 03:50:16,907 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-05 03:51:23,748 - INFO - 127.0.0.1 - - [05/May/2025 03:51:23] "POST /api/process HTTP/1.1" 200 -
+2025-05-05 03:52:11,590 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-05 03:52:45,377 - INFO - 127.0.0.1 - - [05/May/2025 03:52:45] "POST /api/process HTTP/1.1" 200 -
+2025-05-05 03:53:16,432 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-05 03:53:51,027 - INFO - 127.0.0.1 - - [05/May/2025 03:53:51] "POST /api/process HTTP/1.1" 200 -
+2025-05-05 03:54:24,392 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-05 03:54:33,185 - INFO - 127.0.0.1 - - [05/May/2025 03:54:33] "POST /api/process HTTP/1.1" 200 -
+2025-05-05 03:54:57,087 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-05 03:55:45,281 - INFO - 127.0.0.1 - - [05/May/2025 03:55:45] "POST /api/process HTTP/1.1" 200 -

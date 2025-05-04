@@ -378,6 +378,7 @@ class OCRProcessor:
         
         def target_function():
             try:
+                # Process the file
                 result = self.ocr_engine.process_file(
                     file_path=file_path,
                     language=language,
