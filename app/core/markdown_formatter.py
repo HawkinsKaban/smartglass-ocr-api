@@ -37,6 +37,10 @@ class MarkdownFormatter:
             md_content.append(f"confidence: {results.get('confidence', 0):.2f}")
             md_content.append(f"image_type: {metadata.get('image_type', 'unknown')}")
             md_content.append(f"engine: {metadata.get('best_engine', 'unknown')}")
+            
+            # Add signage-specific metadata if available
+            if metadata.get('is_outdoor_signage', False):
+                md_content.append(f"content_type: {metadata.get('content_type', 'unknown')}")
         
         md_content.append("---")
         md_content.append("")
@@ -60,8 +64,21 @@ class MarkdownFormatter:
             md_content.append(f"| Image Type | {metadata.get('image_type', 'Unknown')} |")
             md_content.append(f"| OCR Engine | {metadata.get('best_engine', 'Unknown')} |")
             md_content.append(f"| Confidence | {results.get('confidence', 0):.2f}% |")
+            
+            # Add content type for signage
+            if metadata.get('is_outdoor_signage', False):
+                md_content.append(f"| Content Type | {metadata.get('content_type', 'Unknown')} |")
         
         md_content.append("")
+        
+        # Add signage-specific information
+        is_signage = 'metadata' in results and results['metadata'].get('is_outdoor_signage', False)
+        
+        if is_signage:
+            md_content.append("## Sign Analysis")
+            md_content.append("")
+            md_content.append(results['metadata'].get('description', 'This appears to be a sign or banner.'))
+            md_content.append("")
         
         # Add summary if available
         if 'summary' in results and results['summary']:
@@ -94,7 +111,16 @@ class MarkdownFormatter:
             doc_structure = results.get('document_structure', '')
             image_type = results.get('metadata', {}).get('image_type', '')
             
-            if any(s in doc_structure.lower() or s in image_type.lower() for s in ['table', 'form']):
+            # For signage, use code block to preserve formatting
+            if is_signage or image_type == 'signage':
+                md_content.append("```")
+                # Use original_text if available to preserve formatting
+                if 'original_text' in results:
+                    md_content.append(results['original_text'])
+                else:
+                    md_content.append(results['text'])
+                md_content.append("```")
+            elif any(s in doc_structure.lower() or s in image_type.lower() for s in ['table', 'form']):
                 # For tables, try to format as Markdown table if possible
                 MarkdownFormatter._format_table_text(results['text'], md_content)
             elif any(s in doc_structure.lower() for s in ['code', 'scientific']):

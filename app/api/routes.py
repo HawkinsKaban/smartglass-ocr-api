@@ -46,7 +46,7 @@ def docs():
                     {'name': 'page', 'in': 'formData', 'required': False, 'type': 'integer', 'description': 'Page number for PDF (0-based)'},
                     {'name': 'summary_length', 'in': 'formData', 'required': False, 'type': 'integer', 'description': 'Maximum summary length'},
                     {'name': 'summary_style', 'in': 'formData', 'required': False, 'type': 'string', 'description': 'Summary style (concise, detailed, bullets, structured)'},
-                    {'name': 'process_type', 'in': 'formData', 'required': False, 'type': 'string', 'description': 'Processing type (auto, fast, accurate, handwritten)'}
+                    {'name': 'process_type', 'in': 'formData', 'required': False, 'type': 'string', 'description': 'Processing type (auto, fast, accurate, handwritten, signage)'}
                 ],
                 'responses': {
                     '200': {
@@ -138,6 +138,12 @@ def process_file_worker(task_id, file_path, original_filename, language, page, s
         elif process_type == 'handwritten':
             ocr_processor.ocr_engine.config["preprocessing_level"] = "handwritten"
             ocr_processor.ocr_engine.config["max_image_dimension"] = 1800  # Limit size for handwritten
+        elif process_type == 'signage':
+            ocr_processor.ocr_engine.config["preprocessing_level"] = "aggressive"
+            ocr_processor.ocr_engine.config["use_all_available_engines"] = True
+            ocr_processor.ocr_engine.config["adaptive_binarization"] = True
+            ocr_processor.ocr_engine.config["edge_enhancement"] = True
+            ocr_processor.ocr_engine.config["perspective_correction"] = True
         else:
             # Auto - reset to defaults
             ocr_processor.ocr_engine.config["lightweight_mode"] = False
@@ -157,6 +163,10 @@ def process_file_worker(task_id, file_path, original_filename, language, page, s
         # Convert NumPy types to Python types for JSON serialization
         results = convert_numpy_types(results)
         
+        # Ensure we have original_text (in case it's not set by the processor)
+        if 'text' in results and 'original_text' not in results:
+            results['original_text'] = results['text']
+        
         # Clean text and summary in the results
         if 'text' in results:
             results['text'] = clean_response_text(results['text'])
@@ -164,6 +174,16 @@ def process_file_worker(task_id, file_path, original_filename, language, page, s
             results['summary'] = clean_response_text(results['summary'])
         if 'key_insights' in results and isinstance(results['key_insights'], list):
             results['key_insights'] = [clean_response_text(insight) for insight in results['key_insights']]
+        
+        # Enhanced formatting for signage/banners
+        if process_type == 'signage' or ('metadata' in results and results['metadata'].get('is_outdoor_signage')):
+            # Format a more descriptive response
+            content_type = results['metadata'].get('content_type', 'unknown').title()
+            description = results['metadata'].get('description', '')
+            
+            # Add content type and description to response
+            results['content_type'] = content_type
+            results['description'] = description
         
         # Update task status to complete
         active_tasks[task_id] = {
@@ -201,7 +221,7 @@ def detect_image_type(file_path):
         # Read the image
         img = cv2.imread(file_path)
         if img is None:
-            return "document", 0, 0, False  # Default for non-image files
+            return "document", 0, 0, False
             
         # Get dimensions
         height, width = img.shape[:2]
@@ -214,21 +234,52 @@ def detect_image_type(file_path):
         else:
             gray = img
             
-        # Check for handwritten content
-        # Simplified handwriting detection:
-        # - Calculate edge density using Canny
+        # Calculate edge density using Canny
         edges = cv2.Canny(gray, 50, 150)
         edge_pixels = np.count_nonzero(edges)
         edge_density = edge_pixels / (height * width)
         
-        # - Calculate contrast
+        # Calculate contrast
         contrast = np.std(gray)
         
-        # - Detect if image is handwritten
+        # Check color variance (useful for signage)
+        if len(img.shape) > 2:
+            hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+            color_std = np.std(hsv[:,:,1])  # Saturation standard deviation
+            has_strong_colors = color_std > 50
+        else:
+            has_strong_colors = False
+        
+        # Calculate aspect ratio
+        aspect_ratio = width / height
+        
+        # Look for rectangular contours (common in signage)
+        has_rectangular_contour = False
+        contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        
+        for contour in contours:
+            peri = cv2.arcLength(contour, True)
+            approx = cv2.approxPolyDP(contour, 0.04 * peri, True)
+            
+            # If we find a rectangle that's large enough to be a sign
+            if len(approx) == 4 and cv2.contourArea(contour) > 0.3 * (width * height):
+                has_rectangular_contour = True
+                break
+        
+        # Detect if image is a sign/banner
+        is_signage = (
+            (contrast > 60 or has_strong_colors) and  # Good contrast or strong colors
+            (edge_density < 0.08) and  # Not too dense with edges
+            (aspect_ratio > 1.5 or aspect_ratio < 0.67 or has_rectangular_contour)  # Wide/tall or has rectangular border
+        )
+        
+        if is_signage:
+            return "signage", width, height, file_size > 5 * 1024 * 1024
+        
+        # Detect if image is handwritten
         is_handwritten = (edge_density < 0.06 and contrast < 60)
         
-        # Calculate expected processing time based on pixel count
-        # Handwritten text takes longer to process
+        # Calculate expected processing time and determine type
         if is_handwritten:
             expected_time = pixel_count / 1000000 * 40  # 40 seconds per million pixels for handwritten
             img_type = "handwritten"
@@ -240,7 +291,7 @@ def detect_image_type(file_path):
             else:
                 img_type = "natural"
                 
-        return img_type, width, height, file_size > 5 * 1024 * 1024  # Is large file?
+        return img_type, width, height, file_size > 5 * 1024 * 1024
     except Exception as e:
         logger.warning(f"Error detecting image type: {e}")
         return "document", 0, 0, False
@@ -276,6 +327,9 @@ def process_file():
         summary_style = request.form.get('summary_style', current_app.config['DEFAULT_SUMMARY_STYLE'])
         process_type = request.form.get('process_type', 'auto').lower()
         
+        # Add a specific parameter for handling outdoor signs
+        handle_as_signage = request.form.get('handle_as_signage', 'auto').lower()
+        
         # Automatically detect image characteristics if process_type is auto
         if process_type == 'auto':
             img_type, width, height, is_large = detect_image_type(file_path)
@@ -284,10 +338,21 @@ def process_file():
             if img_type == "handwritten":
                 process_type = "handwritten"
                 logger.info(f"Detected handwritten content, switching to handwritten mode")
+            elif img_type == "signage" or handle_as_signage == 'true':
+                process_type = "signage"
+                logger.info(f"Detected signage or banner, switching to signage mode")
             elif is_large:
                 # For large files, use faster processing
                 process_type = "fast"
                 logger.info(f"Detected large file ({width}x{height}), switching to fast mode")
+        
+        # Update OCR processor config based on process type
+        if process_type == 'signage':
+            ocr_processor.ocr_engine.config["preprocessing_level"] = "aggressive"
+            ocr_processor.ocr_engine.config["use_all_available_engines"] = True
+            ocr_processor.ocr_engine.config["adaptive_binarization"] = True
+            ocr_processor.ocr_engine.config["edge_enhancement"] = True
+            ocr_processor.ocr_engine.config["perspective_correction"] = True
         
         # Calculate timeout based on file size and processing type
         file_size = os.path.getsize(file_path)
@@ -338,6 +403,10 @@ def process_file():
                 # Convert NumPy types to Python types for JSON serialization
                 results = convert_numpy_types(results)
                 
+                # Ensure we have original_text (in case it's not set by the processor)
+                if 'text' in results and 'original_text' not in results:
+                    results['original_text'] = results['text']
+                
                 # Clean text and summary in the results
                 if 'text' in results:
                     results['text'] = clean_response_text(results['text'])
@@ -345,6 +414,16 @@ def process_file():
                     results['summary'] = clean_response_text(results['summary'])
                 if 'key_insights' in results and isinstance(results['key_insights'], list):
                     results['key_insights'] = [clean_response_text(insight) for insight in results['key_insights']]
+                
+                # Enhanced formatting for signage/banners
+                if process_type == 'signage' or ('metadata' in results and results['metadata'].get('is_outdoor_signage')):
+                    # Format a more descriptive response
+                    content_type = results['metadata'].get('content_type', 'unknown').title()
+                    description = results['metadata'].get('description', '')
+                    
+                    # Add content type and description to response
+                    results['content_type'] = content_type
+                    results['description'] = description
                 
                 # Prepare response
                 response = {
@@ -430,6 +509,11 @@ def check_task_status(task_id):
         # Clean text in results if not already cleaned
         if 'results' in response:
             results = response['results']
+            
+            # Store original text before cleaning if not already stored
+            if 'text' in results and 'original_text' not in results:
+                results['original_text'] = results['text']
+                
             if 'text' in results:
                 results['text'] = clean_response_text(results['text'])
             if 'summary' in results:

@@ -186,6 +186,10 @@ class ImageProcessor:
             # Optimized for forms
             self._preprocess_form(base_image, image_data, processed_images)
         
+        elif strategy == ProcessingStrategy.SIGNAGE:
+            # Optimized for outdoor signs and banners
+            self._preprocess_signage(base_image, image_data, processed_images)
+        
         elif strategy == ProcessingStrategy.STANDARD:
             # Standard processing for general cases
             self._preprocess_standard(base_image, image_data, processed_images)
@@ -213,6 +217,159 @@ class ImageProcessor:
         processed_images.append("original")
         
         return processed_images, image_data
+    
+    # Add the new preprocessing method for signage
+    def _preprocess_signage(self, base_image, image_data, processed_images):
+        """
+        Optimized preprocessing for outdoor signage and banners
+        
+        Args:
+            base_image: Base image to process
+            image_data: Dictionary to store processed images
+            processed_images: List to track processing methods
+        """
+        # 1. Apply adaptive histogram equalization for better contrast in varying lighting
+        clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(8, 8))
+        contrast_enhanced = clahe.apply(base_image)
+        image_data["contrast_enhanced"] = contrast_enhanced
+        processed_images.append("contrast_enhanced")
+        
+        # 2. Apply bilateral filter to reduce noise while preserving edges
+        bilateral = cv2.bilateralFilter(contrast_enhanced, 9, 75, 75)
+        image_data["bilateral"] = bilateral
+        processed_images.append("bilateral")
+        
+        # 3. Apply adaptive thresholding to handle uneven lighting
+        adaptive = cv2.adaptiveThreshold(bilateral, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, 
+                                       cv2.THRESH_BINARY, 15, 8)
+        image_data["adaptive"] = adaptive
+        processed_images.append("adaptive")
+        
+        # 4. Try Otsu thresholding as well
+        _, otsu = cv2.threshold(contrast_enhanced, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+        image_data["otsu"] = otsu
+        processed_images.append("otsu")
+        
+        # 5. Special processing for reflective/glare conditions
+        # Detect bright spots that might be glare
+        _, bright_mask = cv2.threshold(base_image, 220, 255, cv2.THRESH_BINARY)
+        
+        # If glare is detected, apply special processing
+        if np.count_nonzero(bright_mask) > 0.05 * base_image.size:
+            # Create a mask of glare areas (dilated to cover full glare area)
+            kernel = np.ones((7, 7), np.uint8)
+            glare_mask = cv2.dilate(bright_mask, kernel, iterations=2)
+            
+            # Use inpainting to remove glare
+            glare_reduced = cv2.inpaint(base_image, glare_mask, 5, cv2.INPAINT_TELEA)
+            image_data["glare_reduced"] = glare_reduced
+            processed_images.append("glare_reduced")
+            
+            # Apply thresholding on glare-reduced image
+            _, glare_otsu = cv2.threshold(glare_reduced, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+            image_data["glare_otsu"] = glare_otsu
+            processed_images.append("glare_otsu")
+        
+        # 6. Try morphological operations to enhance text
+        kernel = np.ones((2, 2), np.uint8)
+        morph_open = cv2.morphologyEx(adaptive, cv2.MORPH_OPEN, kernel)
+        image_data["morph_open"] = morph_open
+        processed_images.append("morph_open")
+        
+        # 7. Edge enhancement for clearer text boundaries
+        edges = cv2.Canny(bilateral, 30, 130)
+        edge_dilated = cv2.dilate(edges, kernel, iterations=1)
+        # Convert edges to float32 to avoid overflow in addWeighted
+        edges_float = edge_dilated.astype(np.float32)
+        edge_enhanced = cv2.addWeighted(base_image, 0.7, edges_float, 0.3, 0).astype(np.uint8)
+        image_data["edge_enhanced"] = edge_enhanced
+        processed_images.append("edge_enhanced")
+        
+        # 8. Try perspective correction if there's a clear rectangular shape
+        corrected = self._try_perspective_correction(base_image)
+        if corrected is not None:
+            image_data["perspective_corrected"] = corrected
+            processed_images.append("perspective_corrected")
+            
+            # Apply Otsu to the corrected image
+            _, corrected_otsu = cv2.threshold(corrected, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+            image_data["corrected_otsu"] = corrected_otsu
+            processed_images.append("corrected_otsu")
+    
+    def _try_perspective_correction(self, image):
+        """
+        Try to correct perspective distortion in an image
+        
+        Args:
+            image: Image to correct
+            
+        Returns:
+            Corrected image or None if correction failed
+        """
+        try:
+            # Find contours in the image
+            edges = cv2.Canny(image, 50, 150)
+            contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            
+            if not contours:
+                return None
+                
+            # Find the largest contour
+            largest_contour = max(contours, key=cv2.contourArea)
+            
+            # Check if it's large enough to be a sign
+            image_area = image.shape[0] * image.shape[1]
+            if cv2.contourArea(largest_contour) < 0.2 * image_area:
+                return None
+                
+            # Approximate the contour to find corners
+            peri = cv2.arcLength(largest_contour, True)
+            approx = cv2.approxPolyDP(largest_contour, 0.02 * peri, True)
+            
+            # If it has 4 corners, it might be a rectangular sign
+            if len(approx) == 4:
+                # Convert points to right format
+                pts = np.array([point[0] for point in approx], dtype=np.float32)
+                
+                # Sort points (top-left, top-right, bottom-right, bottom-left)
+                s = pts.sum(axis=1)
+                rect = np.zeros((4, 2), dtype=np.float32)
+                rect[0] = pts[np.argmin(s)]  # Top-left: smallest sum
+                rect[2] = pts[np.argmax(s)]  # Bottom-right: largest sum
+                
+                diff = np.diff(pts, axis=1)
+                rect[1] = pts[np.argmin(diff)]  # Top-right: smallest difference
+                rect[3] = pts[np.argmax(diff)]  # Bottom-left: largest difference
+                
+                # Calculate width and height of the destination image
+                width_a = np.sqrt(((rect[1][0] - rect[0][0]) ** 2) + ((rect[1][1] - rect[0][1]) ** 2))
+                width_b = np.sqrt(((rect[2][0] - rect[3][0]) ** 2) + ((rect[2][1] - rect[3][1]) ** 2))
+                max_width = max(int(width_a), int(width_b))
+                
+                height_a = np.sqrt(((rect[2][0] - rect[1][0]) ** 2) + ((rect[2][1] - rect[1][1]) ** 2))
+                height_b = np.sqrt(((rect[3][0] - rect[0][0]) ** 2) + ((rect[3][1] - rect[0][1]) ** 2))
+                max_height = max(int(height_a), int(height_b))
+                
+                # Set destination points
+                dst = np.array([
+                    [0, 0],
+                    [max_width - 1, 0],
+                    [max_width - 1, max_height - 1],
+                    [0, max_height - 1]
+                ], dtype=np.float32)
+                
+                # Calculate perspective transform matrix
+                M = cv2.getPerspectiveTransform(rect, dst)
+                
+                # Apply perspective transform
+                warped = cv2.warpPerspective(image, M, (max_width, max_height))
+                return warped
+            
+            return None
+            
+        except Exception as e:
+            logger.warning(f"Perspective correction failed: {e}")
+            return None
     
     def _detect_text_regions(self, gray_image) -> List[Tuple[int, int, int, int]]:
         """
@@ -1420,6 +1577,8 @@ class ImageProcessor:
             return ProcessingStrategy.FORM
         elif image_type == ImageType.NEWSPAPER:
             return ProcessingStrategy.MULTI_COLUMN
+        elif image_type == ImageType.SIGNAGE:  # Add this condition for signage
+            return ProcessingStrategy.SIGNAGE
         
         # For low quality images, use aggressive processing
         if image_type == ImageType.LOW_QUALITY:

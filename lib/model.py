@@ -60,6 +60,7 @@ class ProcessingStrategy(Enum):
     MULTI_COLUMN = "multi_column"   # Optimized for multi-column layouts
     SCIENTIFIC = "scientific"       # Optimized for scientific documents
     FORM = "form"                   # Optimized for forms
+    SIGNAGE = "signage"             # Optimized for outdoor signs and banners
 
 # Define document structure type for better analysis
 class DocumentStructure(Enum):
@@ -73,7 +74,7 @@ class DocumentStructure(Enum):
     MULTI_COLUMN = "multi_column"   # Multi-column layout
     SCIENTIFIC = "scientific"       # Scientific with formulas
     MIXED = "mixed"                 # Mixed structure types
-
+    SIGNAGE = "signage"             # Signage and banner text
 @dataclass
 class TextRegion:
     """Represents a region of text in an image"""
