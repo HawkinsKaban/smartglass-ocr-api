@@ -399,3 +399,34 @@ def convert_numpy_types(obj):
         return bool(obj)
     else:
         return obj
+    
+
+def clean_response_text(text):
+    """
+    Clean text for API responses by removing newlines and special characters
+    
+    Args:
+        text: Input text to clean
+        
+    Returns:
+        Cleaned text
+    """
+    if not text:
+        return ""
+    
+    import re
+    
+    # Replace newlines with spaces
+    text = re.sub(r'\n+', ' ', text)
+    
+    # Replace multiple spaces with a single space
+    text = re.sub(r'\s+', ' ', text)
+    
+    # Replace backslashes
+    text = text.replace('\\', '')
+    
+    # Replace other special characters if needed
+    text = text.replace('\t', ' ')
+    text = text.replace('\r', '')
+    
+    return text.strip()

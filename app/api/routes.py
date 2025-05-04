@@ -11,7 +11,7 @@ from datetime import datetime
 from flask import Blueprint, request, jsonify, send_file, Response, current_app
 
 from app.core.ocr_processor import OCRProcessor
-from app.api.utils import allowed_file, generate_unique_filename, get_markdown_files, convert_numpy_types
+from app.api.utils import allowed_file, generate_unique_filename, get_markdown_files, convert_numpy_types, clean_response_text
 
 # Configure logging
 logger = logging.getLogger("API-Routes")
@@ -156,6 +156,14 @@ def process_file_worker(task_id, file_path, original_filename, language, page, s
         
         # Convert NumPy types to Python types for JSON serialization
         results = convert_numpy_types(results)
+        
+        # Clean text and summary in the results
+        if 'text' in results:
+            results['text'] = clean_response_text(results['text'])
+        if 'summary' in results:
+            results['summary'] = clean_response_text(results['summary'])
+        if 'key_insights' in results and isinstance(results['key_insights'], list):
+            results['key_insights'] = [clean_response_text(insight) for insight in results['key_insights']]
         
         # Update task status to complete
         active_tasks[task_id] = {
@@ -330,6 +338,14 @@ def process_file():
                 # Convert NumPy types to Python types for JSON serialization
                 results = convert_numpy_types(results)
                 
+                # Clean text and summary in the results
+                if 'text' in results:
+                    results['text'] = clean_response_text(results['text'])
+                if 'summary' in results:
+                    results['summary'] = clean_response_text(results['summary'])
+                if 'key_insights' in results and isinstance(results['key_insights'], list):
+                    results['key_insights'] = [clean_response_text(insight) for insight in results['key_insights']]
+                
                 # Prepare response
                 response = {
                     'status': results.get('status', 'success'),
@@ -410,6 +426,16 @@ def check_task_status(task_id):
         
         # Convert NumPy types to Python types for JSON serialization
         response = convert_numpy_types(response)
+        
+        # Clean text in results if not already cleaned
+        if 'results' in response:
+            results = response['results']
+            if 'text' in results:
+                results['text'] = clean_response_text(results['text'])
+            if 'summary' in results:
+                results['summary'] = clean_response_text(results['summary'])
+            if 'key_insights' in results and isinstance(results['key_insights'], list):
+                results['key_insights'] = [clean_response_text(insight) for insight in results['key_insights']]
         
         # Task is complete, remove from active tasks after a delay
         # Keep task info for a short time in case client checks again

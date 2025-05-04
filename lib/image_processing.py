@@ -176,7 +176,6 @@ class ImageProcessor:
         
         elif strategy == ProcessingStrategy.MULTI_COLUMN:
             # Optimized for multi-column layouts like newspapers
-            # Bug fix: Set width variable from image dimensions
             self._preprocess_multi_column(base_image, image_data, processed_images, width, height)
         
         elif strategy == ProcessingStrategy.SCIENTIFIC:
@@ -1134,7 +1133,7 @@ class ImageProcessor:
         image_data["text_only"] = text_only
         processed_images.append("text_only")
     
-    def _preprocess_multi_column(self, base_image, image_data, processed_images):
+    def _preprocess_multi_column(self, base_image, image_data, processed_images, width=None, height=None):
         """
         Optimized preprocessing for multi-column layouts
         
@@ -1142,13 +1141,16 @@ class ImageProcessor:
             base_image: Base image to process
             image_data: Dictionary to store processed images
             processed_images: List to track processing methods
+            width: Optional width parameter (can be passed from caller)
+            height: Optional height parameter (can be passed from caller)
         """
         # Enhance contrast
         clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
         contrast_enhanced = clahe.apply(base_image)
         
-        # Get image dimensions for processing
-        height, width = base_image.shape[:2]
+        # Get image dimensions for processing (if not provided)
+        if width is None or height is None:
+            height, width = base_image.shape[:2]
         
         # Apply denoising
         denoised = cv2.fastNlMeansDenoising(contrast_enhanced, None, 10, 7, 21)
@@ -1384,7 +1386,6 @@ class ImageProcessor:
         image_data["strong_otsu"] = strong_otsu
         processed_images.append("strong_otsu")
 
-
     def determine_processing_strategy(self, image_stats):
         """
         Determine the best processing strategy based on image type and stats
@@ -1432,7 +1433,6 @@ class ImageProcessor:
         # Default to standard processing
         return ProcessingStrategy.STANDARD
     
-
     def auto_rotate(self, image):
         """
         Auto-rotate image based on orientation detection

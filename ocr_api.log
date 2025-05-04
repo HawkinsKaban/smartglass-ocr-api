@@ -1691,3 +1691,81 @@ TypeError: Object of type int32 is not JSON serializable
 2025-05-04 00:55:21,775 - INFO - 127.0.0.1 - - [04/May/2025 00:55:21] "POST /api/process HTTP/1.1" 200 -
 2025-05-04 00:55:55,881 - INFO -  * Detected change in 'D:\\KERJA\\Bantu Teman\\smartglass-ocr-api\\lib\\image_processing.py', reloading
 2025-05-04 00:55:57,490 - INFO -  * Restarting with stat
+2025-05-05 00:42:55,684 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-05 00:42:58,822 - INFO - EasyOCR initialized successfully
+2025-05-05 00:43:05,554 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.8.192:5000
+2025-05-05 00:43:05,555 - INFO - [33mPress CTRL+C to quit[0m
+2025-05-05 00:43:05,562 - INFO -  * Restarting with stat
+2025-05-05 00:43:14,953 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-05 00:43:17,910 - INFO - EasyOCR initialized successfully
+2025-05-05 00:43:25,714 - WARNING -  * Debugger is active!
+2025-05-05 00:43:25,753 - INFO -  * Debugger PIN: 409-810-023
+2025-05-05 01:02:38,449 - ERROR - Error processing image: ImageProcessor._preprocess_multi_column() takes 4 positional arguments but 6 were given
+2025-05-05 01:02:38,472 - ERROR - Traceback (most recent call last):
+  File "D:\KERJA\Bantu Teman\smartglass-ocr-api\lib\smartglass_ocr.py", line 525, in _process_image
+    processed_images, image_data = self.image_processor.preprocess_image(image, image_stats, strategy)
+  File "D:\KERJA\Bantu Teman\smartglass-ocr-api\lib\image_processing.py", line 180, in preprocess_image
+    self._preprocess_multi_column(base_image, image_data, processed_images, width, height)
+TypeError: ImageProcessor._preprocess_multi_column() takes 4 positional arguments but 6 were given
+
+2025-05-05 01:02:38,487 - INFO - 127.0.0.1 - - [05/May/2025 01:02:38] "POST /api/process HTTP/1.1" 200 -
+2025-05-05 02:33:40,840 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-05 02:33:48,650 - INFO - EasyOCR initialized successfully
+2025-05-05 02:34:03,077 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.8.192:5000
+2025-05-05 02:34:03,078 - INFO - [33mPress CTRL+C to quit[0m
+2025-05-05 02:34:03,089 - INFO -  * Restarting with stat
+2025-05-05 02:34:16,154 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-05 02:34:26,057 - WARNING -  * Debugger is active!
+2025-05-05 02:34:26,099 - INFO -  * Debugger PIN: 409-810-023
+2025-05-05 02:34:30,159 - INFO -  * Detected change in 'D:\\KERJA\\Bantu Teman\\smartglass-ocr-api\\lib\\image_processing.py', reloading
+2025-05-05 02:34:31,733 - INFO -  * Restarting with stat
+2025-05-05 02:34:44,319 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-05 02:34:53,093 - WARNING -  * Debugger is active!
+2025-05-05 02:34:53,132 - INFO -  * Debugger PIN: 409-810-023
+2025-05-05 02:34:55,597 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-05 02:35:25,578 - INFO -  * Detected change in 'D:\\KERJA\\Bantu Teman\\smartglass-ocr-api\\lib\\utils.py', reloading
+2025-05-05 02:35:27,045 - INFO -  * Restarting with stat
+2025-05-05 02:35:36,816 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-05 02:35:43,002 - WARNING -  * Debugger is active!
+2025-05-05 02:35:43,040 - INFO -  * Debugger PIN: 409-810-023
+2025-05-05 02:35:56,377 - INFO -  * Detected change in 'D:\\KERJA\\Bantu Teman\\smartglass-ocr-api\\app\\api\\routes.py', reloading
+2025-05-05 02:35:57,857 - INFO -  * Restarting with stat
+2025-05-05 02:43:59,177 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-05 02:44:01,437 - INFO - EasyOCR initialized successfully
+2025-05-05 02:44:05,408 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.8.192:5000
+2025-05-05 02:44:05,409 - INFO - [33mPress CTRL+C to quit[0m
+2025-05-05 02:44:05,414 - INFO -  * Restarting with stat
+2025-05-05 02:44:12,100 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-05 02:44:16,726 - WARNING -  * Debugger is active!
+2025-05-05 02:44:16,751 - INFO -  * Debugger PIN: 409-810-023
+2025-05-05 02:44:17,909 - ERROR - Error processing image: ImageProcessor._preprocess_multi_column() takes 4 positional arguments but 6 were given
+2025-05-05 02:44:17,910 - ERROR - Traceback (most recent call last):
+  File "D:\KERJA\Bantu Teman\smartglass-ocr-api\lib\smartglass_ocr.py", line 525, in _process_image
+    processed_images, image_data = self.image_processor.preprocess_image(image, image_stats, strategy)
+  File "D:\KERJA\Bantu Teman\smartglass-ocr-api\lib\image_processing.py", line 180, in preprocess_image
+    self._preprocess_multi_column(base_image, image_data, processed_images, width, height)
+TypeError: ImageProcessor._preprocess_multi_column() takes 4 positional arguments but 6 were given
+
+2025-05-05 02:44:18,087 - INFO - 127.0.0.1 - - [05/May/2025 02:44:18] "POST /api/process HTTP/1.1" 200 -
+2025-05-05 02:49:16,228 - INFO -  * Detected change in 'D:\\KERJA\\Bantu Teman\\smartglass-ocr-api\\lib\\image_processing.py', reloading
+2025-05-05 02:49:17,340 - INFO -  * Restarting with stat
+2025-05-05 02:49:24,720 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-05 02:49:29,872 - WARNING -  * Debugger is active!
+2025-05-05 02:49:29,896 - INFO -  * Debugger PIN: 409-810-023
+2025-05-05 02:49:44,908 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-05 02:50:15,275 - INFO - 127.0.0.1 - - [05/May/2025 02:50:15] "POST /api/process HTTP/1.1" 200 -
+2025-05-05 02:50:46,872 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-05 02:51:08,648 - INFO - 127.0.0.1 - - [05/May/2025 02:51:08] "POST /api/process HTTP/1.1" 200 -
+2025-05-05 02:51:45,939 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-05 02:52:34,799 - INFO - 127.0.0.1 - - [05/May/2025 02:52:34] "POST /api/process HTTP/1.1" 200 -
+2025-05-05 02:53:34,565 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-05 02:54:14,632 - INFO - 127.0.0.1 - - [05/May/2025 02:54:14] "POST /api/process HTTP/1.1" 200 -
