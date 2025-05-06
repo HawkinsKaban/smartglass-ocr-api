@@ -188,19 +188,19 @@ def process_file_worker(task_id, file_path, original_filename, language, page, s
         results = convert_numpy_types(results)
         
         # Ensure we have original_text (in case it's not set by the processor)
-        if isinstance(results, dict) and 'text' in results and 'original_text' not in results:
+        if 'text' in results and 'original_text' not in results:
             results['original_text'] = results['text']
         
         # Clean text and summary in the results
-        if isinstance(results, dict) and 'text' in results:
+        if 'text' in results:
             results['text'] = clean_response_text(results['text'])
-        if isinstance(results, dict) and 'summary' in results:
+        if 'summary' in results:
             results['summary'] = clean_response_text(results['summary'])
-        if isinstance(results, dict) and 'key_insights' in results and isinstance(results['key_insights'], list):
+        if 'key_insights' in results and isinstance(results['key_insights'], list):
             results['key_insights'] = [clean_response_text(insight) for insight in results['key_insights']]
         
         # Enhanced formatting for signage/banners
-        if process_type == 'signage' or (isinstance(results, dict) and 'metadata' in results and 
+        if process_type == 'signage' or ('metadata' in results and 
                                         isinstance(results['metadata'], dict) and 
                                         results['metadata'].get('is_outdoor_signage')):
             # Format a more descriptive response
@@ -378,10 +378,10 @@ def detect_image_type(file_path):
             horizontal_lines = cv2.morphologyEx(edges, cv2.MORPH_OPEN, horizontal_kernel, iterations=2)
             vertical_lines = cv2.morphologyEx(edges, cv2.MORPH_OPEN, vertical_kernel, iterations=2)
             
-            # Combine lines
-            table_structure = cv2.add(horizontal_lines, vertical_lines)
+            # Combine to get form structure
+            table_structure = cv2.bitwise_or(horizontal_lines, vertical_lines)
             
-            # Count potential cells in the table
+            # Enhance form field boundaries
             cell_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
             table_structure = cv2.dilate(table_structure, cell_kernel, iterations=1)
             contours, _ = cv2.findContours(table_structure, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -772,7 +772,7 @@ def process_file():
         if file_size < 1024 * 1024 or process_type == 'fast':
             try:
                 # Process synchronously
-                results, md_filename = ocr_processor.process_file(
+                result = ocr_processor.process_file(
                     file_path=file_path,
                     original_filename=original_filename,
                     language=language,
@@ -780,6 +780,24 @@ def process_file():
                     summary_length=summary_length,
                     summary_style=summary_style
                 )
+                
+                # Check if the result is a tuple and extract its values
+                if isinstance(result, tuple):
+                    results, md_filename = result
+                else:
+                    # Handle case where result is not a tuple
+                    results = result
+                    md_filename = ""
+                
+                # Ensure results is a dictionary
+                if not isinstance(results, dict):
+                    results = {
+                        "status": "error",
+                        "message": "Invalid result format from OCR processor",
+                        "metadata": {
+                            "processing_time_ms": round((time.time() - start_time) * 1000, 2)
+                        }
+                    }
                 
                 # Convert NumPy types to Python types for JSON serialization
                 results = convert_numpy_types(results)
