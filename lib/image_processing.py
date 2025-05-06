@@ -1198,13 +1198,13 @@ class ImageProcessor:
         if w > 1500:
             scale = 1500 / w
             resized = cv2.resize(base_image, (int(w * scale), int(h * scale)), 
-                              interpolation=cv2.INTER_AREA)
+                            interpolation=cv2.INTER_AREA)
             image_data["resized"] = resized
             processed_images.append("resized")
             base_image = resized
         
-        # Apply noise reduction - ID cards often have watermarks and background patterns
-        denoised = cv2.fastNlMeansDenoising(base_image, None, 10, 7, 21)
+        # Apply stronger noise reduction - ID cards often have watermarks and background patterns
+        denoised = cv2.fastNlMeansDenoising(base_image, None, 15, 7, 21)
         image_data["denoised"] = denoised
         processed_images.append("denoised")
         
@@ -1225,17 +1225,17 @@ class ImageProcessor:
         image_data["otsu"] = otsu
         processed_images.append("otsu")
         
-        # Additional adaptive thresholding - good for varying lighting in ID cards
+        # Add adaptive thresholding with larger block sizes for better field extraction
         adaptive = cv2.adaptiveThreshold(contrast_enhanced, 255, 
-                                      cv2.ADAPTIVE_THRESH_GAUSSIAN_C, 
-                                      cv2.THRESH_BINARY, 11, 5)
+                                    cv2.ADAPTIVE_THRESH_GAUSSIAN_C, 
+                                    cv2.THRESH_BINARY, 21, 10)
         image_data["adaptive"] = adaptive
         processed_images.append("adaptive")
         
         # Strong adaptive thresholding for better field extraction
         strong_adaptive = cv2.adaptiveThreshold(sharpened, 255, 
-                                             cv2.ADAPTIVE_THRESH_GAUSSIAN_C, 
-                                             cv2.THRESH_BINARY, 15, 8)
+                                            cv2.ADAPTIVE_THRESH_GAUSSIAN_C, 
+                                            cv2.THRESH_BINARY, 15, 8)
         image_data["strong_adaptive"] = strong_adaptive
         processed_images.append("strong_adaptive")
         
@@ -1253,9 +1253,25 @@ class ImageProcessor:
             
             # Apply Otsu on glare reduced image
             _, glare_otsu = cv2.threshold(glare_reduced, 0, 255, 
-                                      cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+                                    cv2.THRESH_BINARY + cv2.THRESH_OTSU)
             image_data["glare_otsu"] = glare_otsu
             processed_images.append("glare_otsu")
+        
+        # Add bilateral filter processing for better text quality
+        bilateral = cv2.bilateralFilter(contrast_enhanced, 11, 17, 17)
+        image_data["bilateral"] = bilateral
+        processed_images.append("bilateral")
+        
+        # Apply edge-based text enhancement
+        edges = cv2.Canny(contrast_enhanced, 30, 120)
+        dilated_edges = cv2.dilate(edges, np.ones((1, 1), np.uint8), iterations=1)
+        try:
+            edge_enhanced = cv2.addWeighted(contrast_enhanced.astype(np.float32), 0.8, 
+                                        dilated_edges.astype(np.float32), 0.2, 0)
+            image_data["edge_enhanced"] = edge_enhanced.astype(np.uint8)
+            processed_images.append("edge_enhanced")
+        except:
+            pass
     
     def _preprocess_natural(self, base_image, image_data, processed_images):
         """Optimized preprocessing for natural scenes"""

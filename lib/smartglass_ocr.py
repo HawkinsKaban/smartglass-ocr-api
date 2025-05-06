@@ -209,6 +209,10 @@ class SmartGlassOCR:
             "perspective_correction": True,     # Correct perspective distortion
             "contrast_enhancement": True,       # Enhance contrast
             "text_line_detection": True,        # Detect text lines for better OCR
+            # ID card specific settings
+            "id_card_timeout": 600,             # 10 minutes timeout for ID cards
+            "id_card_resize_width": 1000,       # Resize ID cards to this width
+            "id_card_use_tesseract_only": True, # Use only tesseract for ID cards
         }
         
         # Override with user config
@@ -268,6 +272,14 @@ class SmartGlassOCR:
         # Initialize version
         self.version = "4.1.0"  # Updated version with enhanced image processing
         
+        # Initialize markdown formatter
+        try:
+            from app.core.markdown_formatter import MarkdownFormatter
+            self.markdown_formatter = MarkdownFormatter()
+        except ImportError:
+            self.markdown_formatter = None
+            logger.warning("Markdown formatter not available")
+        
         logger.info(f"SmartGlassOCR v{self.version} initialized")
         logger.info(f"Available OCR engines: {list(self.ocr_engines.keys())}")
         logger.info(f"Running in {'lightweight' if self.config['lightweight_mode'] else 'standard'} mode")
@@ -296,9 +308,111 @@ class SmartGlassOCR:
         except Exception as e:
             logger.error(f"Error getting Tesseract version: {e}")
 
+    def process_id_card(self, file_path: str, language: str = "ind") -> dict:
+        """
+        Specialized method for processing Indonesian ID cards (KTP) with optimized parameters
+        
+        Args:
+            file_path: Path to the ID card image
+            language: OCR language (default 'ind' for Indonesian)
+            
+        Returns:
+            Dictionary with OCR results optimized for ID structure
+        """
+        start_time = time.time()
+        try:
+            import cv2
+            import numpy as np
+            import pytesseract
+            
+            # Read image
+            image = cv2.imread(file_path)
+            if image is None:
+                return {"status": "error", "message": "Failed to read image file"}
+            
+            # Resize to manageable dimensions
+            h, w = image.shape[:2]
+            target_width = self.config.get("id_card_resize_width", 1000)
+            if w > target_width:
+                scale = target_width / w
+                image = cv2.resize(image, (int(w * scale), int(h * scale)), 
+                                interpolation=cv2.INTER_AREA)
+            
+            # Convert to grayscale
+            gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+            
+            # Apply aggressive preprocessing optimized for ID cards
+            # CLAHE for better contrast
+            clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(8, 8))
+            contrast_enhanced = clahe.apply(gray)
+            
+            # Denoise
+            denoised = cv2.fastNlMeansDenoising(contrast_enhanced, None, 10, 7, 21)
+            
+            # Binarize using adaptive thresholding
+            binary = cv2.adaptiveThreshold(denoised, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, 
+                                        cv2.THRESH_BINARY, 21, 10)
+            
+            # Function to extract specific fields based on position
+            def extract_field(img, field_name, regex_pattern=None):
+                field_config = "--psm 6 --oem 1"
+                text = pytesseract.image_to_string(img, lang=language, config=field_config)
+                if regex_pattern:
+                    import re
+                    match = re.search(regex_pattern, text)
+                    if match:
+                        return match.group(1).strip()
+                return text.strip()
+            
+            # Extract text using direct Tesseract call with optimized PSM mode
+            text = pytesseract.image_to_string(binary, lang=language, config="--psm 3 --oem 1")
+            
+            # Extract structured data - common KTP fields
+            fields = {}
+            
+            # NIK pattern: 16 digits with possible spacing/formatting
+            nik_pattern = r'NIK[:\s]+([0-9\s]+)'
+            fields["NIK"] = extract_field(binary, "NIK", nik_pattern)
+            
+            # Other common fields
+            fields["Name"] = extract_field(binary, "Name", r'Nama[:\s]+(.+)')
+            fields["Place/DOB"] = extract_field(binary, "Place/DOB", r'(?:Tempat|Tempat/Tgl)[\s.]+Lahir[:\s]+(.+)')
+            fields["Gender"] = extract_field(binary, "Gender", r'(?:Jenis|Jenis\s+Kelamin)[:\s]+(.+)')
+            fields["Address"] = extract_field(binary, "Address", r'Alamat[:\s]+(.+)')
+            fields["Religion"] = extract_field(binary, "Religion", r'Agama[:\s]+(.+)')
+            fields["Marital Status"] = extract_field(binary, "Marital Status", r'Status\s+Perkawinan[:\s]+(.+)')
+            fields["Occupation"] = extract_field(binary, "Occupation", r'Pekerjaan[:\s]+(.+)')
+            
+            # Calculate processing time
+            processing_time = time.time() - start_time
+            
+            return {
+                "status": "success",
+                "text": text,
+                "confidence": 75.0,  # Standard confidence for ID card detection
+                "metadata": {
+                    "detected_language": "ind",
+                    "image_type": "id_card",
+                    "best_engine": "tesseract_id_card",
+                    "structured_info": fields,
+                    "processing_time_ms": round(processing_time * 1000, 2)
+                }
+            }
+            
+        except Exception as e:
+            import traceback
+            logger.error(f"Error in ID card processing: {str(e)}\n{traceback.format_exc()}")
+            return {
+                "status": "error",
+                "message": f"ID card processing failed: {str(e)}",
+                "metadata": {
+                    "processing_time_ms": round((time.time() - start_time) * 1000, 2)
+                }
+            }
+
     def process_file(self, file_path: str, original_filename: str = None, language: str = None, 
                     page: int = 0, summary_length: int = None, 
-                    summary_style: str = None) -> dict:
+                    summary_style: str = None) -> Tuple[dict, str]:
         """
         Process a file (image or PDF) and extract text with summarization
         
@@ -311,7 +425,7 @@ class SmartGlassOCR:
             summary_style: Style of summary (concise, detailed, bullets, structured)
             
         Returns:
-            Dictionary with OCR results
+            Tuple of (OCR results dict, Markdown filename)
         """
         start_time = time.time()
         
@@ -327,7 +441,7 @@ class SmartGlassOCR:
         # Check file extension
         ext = os.path.splitext(file_path)[1][1:].lower()
         if ext not in self.config["allowed_extensions"]:
-            return {"status": "error", "message": "Unsupported file type"}
+            return {"status": "error", "message": "Unsupported file type"}, ""
         
         try:
             # Handle PDF vs image
@@ -335,19 +449,22 @@ class SmartGlassOCR:
             
             if is_pdf:
                 if not PDF2IMAGE_AVAILABLE:
-                    return {"status": "error", "message": "PDF processing not available"}
+                    return {"status": "error", "message": "PDF processing not available"}, ""
                 
                 # Convert PDF to image
                 logger.info(f"Converting PDF to image: {file_path}, page {page}")
                 image_path, total_pages = self._convert_pdf_to_image(file_path, page)
                 
                 if not image_path:
-                    return {"status": "error", "message": "Failed to convert PDF to image"}
+                    return {"status": "error", "message": "Failed to convert PDF to image"}, ""
                     
                 # Process the image
                 image_results = self._process_image(image_path, language)
                 
                 # Add PDF-specific metadata
+                if "metadata" not in image_results:
+                    image_results["metadata"] = {}
+                    
                 image_results["metadata"].update({
                     "file_type": "pdf",
                     "page": page,
@@ -363,6 +480,10 @@ class SmartGlassOCR:
                 # Process the image directly
                 logger.info(f"Processing image: {file_path}")
                 image_results = self._process_image(file_path, language)
+                
+                if "metadata" not in image_results:
+                    image_results["metadata"] = {}
+                    
                 image_results["metadata"]["file_type"] = "image"
             
             # Generate summary if text was extracted successfully
@@ -388,6 +509,10 @@ class SmartGlassOCR:
             
             # Add processing time
             processing_time = time.time() - start_time
+            
+            if "metadata" not in image_results:
+                image_results["metadata"] = {}
+                
             image_results["metadata"]["processing_time_ms"] = round(processing_time * 1000, 2)
             
             # Update processing stats
@@ -398,7 +523,16 @@ class SmartGlassOCR:
                 from .information_extraction import organize_output
                 image_results = organize_output(image_results)
             
-            return image_results
+            # Generate markdown file
+            md_filename = ""
+            if self.markdown_formatter:
+                try:
+                    md_content = self.markdown_formatter.format_ocr_results(image_results, original_filename)
+                    md_filename = self._save_markdown_file(md_content, original_filename)
+                except Exception as e:
+                    logger.error(f"Error generating markdown: {e}")
+            
+            return image_results, md_filename
             
         except Exception as e:
             logger.error(f"Error processing file: {e}")
@@ -410,63 +544,7 @@ class SmartGlassOCR:
                 "metadata": {
                     "processing_time_ms": round((time.time() - start_time) * 1000, 2)
                 }
-            }
-    
-    def process_batch(self, file_paths: List[str], language: str = None, 
-                     summary_length: int = None, summary_style: str = None) -> Dict[str, dict]:
-        """
-        Process multiple files in parallel
-        
-        Args:
-            file_paths: List of file paths to process
-            language: OCR language (default from config)
-            summary_length: Maximum summary length
-            summary_style: Style of summary (concise, detailed, bullets, structured)
-            
-        Returns:
-            Dictionary mapping file paths to their OCR results
-        """
-        language = language or self.config["default_language"]
-        summary_length = summary_length or self.config["summary_length"]
-        summary_style = summary_style or self.config["summary_style"]
-        
-        results = {}
-        
-        # Determine optimal number of workers based on file count and CPU cores
-        import multiprocessing
-        cpu_count = multiprocessing.cpu_count()
-        optimal_workers = min(cpu_count, len(file_paths), self.config["max_workers"])
-        
-        with concurrent.futures.ThreadPoolExecutor(max_workers=optimal_workers) as executor:
-            # Submit tasks
-            future_to_path = {
-                executor.submit(
-                    self.process_file, 
-                    path, 
-                    language=language, 
-                    summary_length=summary_length,
-                    summary_style=summary_style
-                ): path for path in file_paths
-            }
-            
-            # Process completions
-            for future in concurrent.futures.as_completed(future_to_path):
-                path = future_to_path[future]
-                try:
-                    result = future.result(timeout=self.config["ocr_timeout"])
-                    results[path] = result
-                except concurrent.futures.TimeoutError:
-                    results[path] = {
-                        "status": "error",
-                        "message": "OCR process timed out"
-                    }
-                except Exception as e:
-                    results[path] = {
-                        "status": "error",
-                        "message": f"Error: {str(e)}"
-                    }
-        
-        return results
+            }, ""
     
     def _process_image(self, image_path: str, language: str) -> dict:
         """Process an image through enhanced pipeline and OCR"""
@@ -474,6 +552,12 @@ class SmartGlassOCR:
             return {"status": "error", "message": "Required image processing libraries not available"}
         
         try:
+            # Check for ID card before expensive processing
+            is_id_card = self._check_if_id_card(image_path)
+            if is_id_card:
+                logger.info("ID card detected, using optimized ID card processing")
+                return self.process_id_card(image_path, language=language)
+            
             # Step 1: Read and analyze the image to determine optimal processing
             image = cv2.imread(image_path)
             
@@ -499,8 +583,15 @@ class SmartGlassOCR:
             
             # For ID cards, force lightweight mode for faster processing
             if image_stats.image_type == ImageType.ID_CARD:
+                # Force lightweight mode for ID cards
                 self.config["lightweight_mode"] = True
-                logger.info("Detected ID card, enabling lightweight mode for faster processing")
+                # Force use of a single OCR engine (Tesseract works best for structured IDs)
+                self.config["use_all_available_engines"] = False
+                # Set higher timeout for ID cards
+                self.config["ocr_timeout"] = self.config.get("id_card_timeout", 600)
+                logger.info("Detected ID card, enabling optimized settings for faster processing")
+                # Use the specialized ID card processor
+                return self.process_id_card(image_path, language=language)
             
             logger.info(f"Enhanced image analysis: {image_stats.image_type.value}, " 
                     f"{image_stats.width}x{image_stats.height}, "
@@ -598,6 +689,55 @@ class SmartGlassOCR:
             import traceback
             logger.error(traceback.format_exc())
             return {"status": "error", "message": f"Processing failed: {str(e)}"}
+    
+    def _check_if_id_card(self, image_path: str) -> bool:
+        """Quick check if an image is an ID card to use optimized processing"""
+        try:
+            import cv2
+            import numpy as np
+            
+            # Read image
+            image = cv2.imread(image_path)
+            if image is None:
+                return False
+            
+            # Simple checks first
+            h, w = image.shape[:2]
+            aspect_ratio = w / h
+            
+            # ID cards typically have aspect ratios between 1.4 and 1.7
+            if not (1.4 < aspect_ratio < 1.8):
+                return False
+                
+            # Quick OCR to check for ID card text (e.g., "NIK", "KTP", etc.)
+            if TESSERACT_AVAILABLE:
+                try:
+                    import pytesseract
+                    # Convert to grayscale
+                    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+                    # Resize for faster processing
+                    scale = min(1, 1000 / max(h, w))
+                    resized = cv2.resize(gray, (int(w * scale), int(h * scale)), 
+                                        interpolation=cv2.INTER_AREA)
+                    # Run quick OCR check
+                    text = pytesseract.image_to_string(resized, lang='ind', config='--psm 11 --oem 1')
+                    text_lower = text.lower()
+                    
+                    # Check for common Indonesian ID card text
+                    id_keywords = ['nik', 'ktp', 'provinsi', 'kabupaten', 'kecamatan', 
+                                  'agama', 'status perkawinan', 'kewarganegaraan']
+                    
+                    keyword_count = sum(1 for kw in id_keywords if kw in text_lower)
+                    if keyword_count >= 2:
+                        logger.info(f"ID card detected with {keyword_count} keywords")
+                        return True
+                except Exception as e:
+                    logger.warning(f"Error in quick ID check: {e}")
+            
+            return False
+        except Exception as e:
+            logger.warning(f"Error in ID card check: {e}")
+            return False
     
     def _convert_pdf_to_image(self, pdf_path: str, page_num: int = 0) -> Tuple[Optional[str], int]:
         """
@@ -764,6 +904,42 @@ class SmartGlassOCR:
             # Rolling average (70% old, 30% new)
             stats['success_rates'][engine] = stats['success_rates'][engine] * 0.7 + success_rate * 0.3
     
+    def _save_markdown_file(self, md_content: str, original_filename: str) -> str:
+        """
+        Save markdown content to a file
+        
+        Args:
+            md_content: Markdown content to save
+            original_filename: Original filename for context
+            
+        Returns:
+            Filename of the saved markdown file
+        """
+        try:
+            base_name = os.path.splitext(os.path.basename(original_filename))[0]
+            base_name = ''.join(c for c in base_name if c.isalnum() or c in '-_.')
+            md_filename = f"{base_name}_{int(time.time())}.md"
+            
+            # Get markdown folder
+            if hasattr(self, 'config') and 'upload_folder' in self.config:
+                markdown_folder = os.path.join(os.path.dirname(self.config['upload_folder']), 'markdown')
+            else:
+                markdown_folder = os.path.join(os.getcwd(), 'data', 'markdown')
+            
+            # Ensure directory exists
+            os.makedirs(markdown_folder, exist_ok=True)
+            
+            file_path = os.path.join(markdown_folder, md_filename)
+            
+            with open(file_path, 'w', encoding='utf-8') as f:
+                f.write(md_content)
+            
+            logger.info(f"Markdown file saved: {md_filename}")
+            return md_filename
+        except Exception as e:
+            logger.error(f"Error saving markdown file: {e}")
+            return f"error_saving_{int(time.time())}.md"
+    
     def get_statistics(self) -> Dict:
         """
         Get processing statistics and performance metrics
@@ -786,7 +962,6 @@ class SmartGlassOCR:
         self.memory_manager.clear_cache()
         logger.info("Cache cleared")
 
-# Additional utility functions for standalone usage
 
     def process_file(self, file_path: str, original_filename: str = None, language: str = None, 
                     page: int = 0, summary_length: int = None, 

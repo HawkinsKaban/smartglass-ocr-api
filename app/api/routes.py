@@ -144,6 +144,12 @@ def process_file_worker(task_id, file_path, original_filename, language, page, s
             ocr_processor.ocr_engine.config["adaptive_binarization"] = True
             ocr_processor.ocr_engine.config["edge_enhancement"] = True
             ocr_processor.ocr_engine.config["perspective_correction"] = True
+        elif process_type == 'id_card':
+            ocr_processor.ocr_engine.config["preprocessing_level"] = "id_card"
+            ocr_processor.ocr_engine.config["use_all_available_engines"] = False  # Use only Tesseract for ID cards
+            ocr_processor.ocr_engine.config["lightweight_mode"] = True  # Use lightweight mode for speed
+            ocr_processor.ocr_engine.config["adaptive_binarization"] = True
+            ocr_processor.ocr_engine.config["edge_enhancement"] = True
         else:
             # Auto - reset to defaults
             ocr_processor.ocr_engine.config["lightweight_mode"] = False
@@ -240,8 +246,20 @@ def detect_image_type(file_path):
         # ID card detection - common ID cards have aspect ratios between 1.4 and 1.7
         is_id_card = 1.4 < aspect_ratio < 1.7
         
-        # Check for text field patterns typical of ID cards
+        # Enhanced ID card detection for Indonesian KTP
         if is_id_card:
+            # Attempt basic OCR to detect KTP keywords
+            try:
+                import pytesseract
+                text_sample = pytesseract.image_to_string(gray, config='--psm 11 --oem 1')
+                text_lower = text_sample.lower()
+                
+                # Check for patterns common in Indonesian ID cards
+                if "nik" in text_lower or "provinsi" in text_lower or "kabupaten" in text_lower or "ktp" in text_lower:
+                    return "id_card", width, height, file_size > 5 * 1024 * 1024
+            except:
+                pass
+            
             # Simple check for text regions in ID cards
             edges = cv2.Canny(gray, 50, 150)
             contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -310,6 +328,51 @@ def detect_image_type(file_path):
         logger.warning(f"Error detecting image type: {e}")
         return "document", 0, 0, False
 
+def preprocess_id_card(file_path, target_width=1000):
+    """
+    Specialized preprocessing for Indonesian ID cards
+    
+    Args:
+        file_path: Path to the ID card image
+        target_width: Target width for resizing
+        
+    Returns:
+        Path to preprocessed image
+    """
+    try:
+        import cv2
+        
+        # Read image
+        img = cv2.imread(file_path)
+        if img is None:
+            return file_path
+            
+        # Resize image to manageable size
+        h, w = img.shape[:2]
+        if w > target_width:
+            scale = target_width / w
+            img = cv2.resize(img, (int(w * scale), int(h * scale)), 
+                           interpolation=cv2.INTER_AREA)
+        
+        # Convert to grayscale
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        
+        # Apply normalization and enhance contrast
+        clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+        enhanced = clahe.apply(gray)
+        
+        # Apply denoising
+        denoised = cv2.fastNlMeansDenoising(enhanced, None, 10, 7, 21)
+        
+        # Create a new optimized image file
+        output_path = f"{os.path.splitext(file_path)[0]}_optimized.jpg"
+        cv2.imwrite(output_path, denoised, [cv2.IMWRITE_JPEG_QUALITY, 90])
+        
+        return output_path
+    except Exception as e:
+        logger.error(f"Error preprocessing ID card: {e}")
+        return file_path
+
 @api_bp.route('/process', methods=['POST'])
 def process_file():
     """Process an uploaded file with OCR and generate markdown"""
@@ -358,6 +421,47 @@ def process_file():
             elif img_type == "id_card":
                 process_type = "id_card"  # New process type for ID cards
                 logger.info(f"Detected ID card, switching to ID card mode")
+                
+                # For ID cards, preprocess the image before OCR
+                optimized_path = preprocess_id_card(file_path)
+                if optimized_path != file_path:
+                    file_path = optimized_path
+                    logger.info(f"Preprocessed ID card image saved to {optimized_path}")
+                    
+                # Try specialized ID card processing
+                try:
+                    # Use direct ID card processing method for faster results
+                    logger.info("Using specialized ID card processing for KTP")
+                    
+                    start_time = time.time()
+                    results = ocr_processor.ocr_engine.process_id_card(
+                        image_path=file_path,
+                        language=language
+                    )
+                    
+                    # Add processing time
+                    processing_time = time.time() - start_time
+                    results['metadata']['processing_time_ms'] = round(processing_time * 1000, 2)
+                    
+                    # Generate markdown file
+                    md_content = ocr_processor.markdown_formatter.format_ocr_results(results, original_filename)
+                    md_filename = ocr_processor._save_markdown_file(md_content, original_filename)
+                    
+                    # Prepare response
+                    response = {
+                        'status': results.get('status', 'success'),
+                        'message': 'File processed successfully',
+                        'results': results,
+                        'markdown_file': md_filename,
+                        'markdown_url': f"/api/markdown/{md_filename}"
+                    }
+                    
+                    return jsonify(response)
+                
+                except Exception as e:
+                    logger.error(f"Error in specialized ID card processing: {str(e)}")
+                    # Continue with standard processing if specialized method fails
+                
             elif is_large:
                 # For large files, use faster processing
                 process_type = "fast"
@@ -372,7 +476,7 @@ def process_file():
             ocr_processor.ocr_engine.config["perspective_correction"] = True
         elif process_type == 'id_card':  # Add configuration for ID cards
             ocr_processor.ocr_engine.config["preprocessing_level"] = "id_card"
-            ocr_processor.ocr_engine.config["use_all_available_engines"] = True
+            ocr_processor.ocr_engine.config["use_all_available_engines"] = False  # Use only Tesseract for ID cards
             ocr_processor.ocr_engine.config["adaptive_binarization"] = True
             ocr_processor.ocr_engine.config["edge_enhancement"] = True
             ocr_processor.ocr_engine.config["lightweight_mode"] = True  # Use lightweight mode for speed
@@ -387,7 +491,7 @@ def process_file():
         elif process_type == 'handwritten':
             timeout = max(default_timeout, 300)  # Longer timeout for handwritten
         elif process_type == 'id_card':
-            timeout = max(default_timeout, 360)  # INCREASED TIMEOUT FOR ID CARDS
+            timeout = max(default_timeout, 600)  # Increased timeout to 10 minutes for ID cards
         elif file_size > 5 * 1024 * 1024:  # Files over 5MB
             timeout = max(default_timeout, 240)  # Longer timeout for large files
         else:
@@ -527,6 +631,10 @@ def check_task_status(task_id):
     # Check if task has completed or errored
     if task['status'] in ['complete', 'error']:
         response = task['response']
+        
+        # Ensure consistent status messages
+        if task['status'] == 'error' and 'status' in response and response['status'] != 'error':
+            response['status'] = 'error'
         
         # Convert NumPy types to Python types for JSON serialization
         response = convert_numpy_types(response)

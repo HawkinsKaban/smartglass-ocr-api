@@ -621,12 +621,15 @@ class OCREngineManager:
         Returns:
             List of OCR engine names in preferred order
         """
+        # Special case for ID cards - use Tesseract only for better performance
+        if image_type == ImageType.ID_CARD:
+            return [e for e in ["tesseract"] if self.engines[e].available]
+        
         # Define preferred sequence based on image type
         type_to_engine_sequence = {
             ImageType.DOCUMENT: ["tesseract", "paddleocr", "easyocr"],
             ImageType.HIGH_CONTRAST: ["tesseract", "paddleocr", "easyocr"],
             ImageType.RECEIPT: ["tesseract", "paddleocr", "easyocr"],
-            ImageType.ID_CARD: ["tesseract", "easyocr", "paddleocr"],
             ImageType.NATURAL: ["easyocr", "paddleocr", "tesseract"],
             ImageType.SIGNAGE: ["easyocr", "paddleocr", "tesseract"],
             ImageType.HANDWRITTEN: ["easyocr", "paddleocr", "tesseract"],

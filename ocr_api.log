@@ -1858,3 +1858,64 @@ TypeError: ImageProcessor._preprocess_multi_column() takes 4 positional argument
 2025-05-06 07:48:42,944 - INFO -  * Debugger PIN: 409-810-023
 2025-05-06 07:48:50,842 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
 2025-05-06 07:52:43,317 - INFO -  * Detected change in 'D:\\KERJA\\Bantu Teman\\smartglass-ocr-api\\app\\api\\routes.py', reloading
+2025-05-06 07:52:45,985 - INFO -  * Restarting with stat
+2025-05-06 07:52:58,489 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-06 07:53:02,185 - INFO - EasyOCR initialized successfully
+2025-05-06 07:53:06,818 - WARNING -  * Debugger is active!
+2025-05-06 07:53:06,871 - INFO -  * Debugger PIN: 409-810-023
+2025-05-06 07:53:16,951 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-06 07:58:10,326 - ERROR - OCR processing timed out for Gambar WhatsApp 2025-05-05 pukul 23.31.18_0edf46f2.jpg
+2025-05-06 07:58:10,328 - INFO - 127.0.0.1 - - [06/May/2025 07:58:10] "POST /api/process HTTP/1.1" 200 -
+2025-05-06 08:00:11,708 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-06 08:05:01,167 - ERROR - OCR processing timed out for Gambar WhatsApp 2025-05-05 pukul 23.31.18_0edf46f2.jpg
+2025-05-06 08:05:01,170 - INFO - 127.0.0.1 - - [06/May/2025 08:05:01] "POST /api/process HTTP/1.1" 200 -
+2025-05-06 08:12:45,478 - INFO -  * Detected change in 'D:\\KERJA\\Bantu Teman\\smartglass-ocr-api\\lib\\image_processing.py', reloading
+2025-05-06 08:12:50,633 - INFO -  * Restarting with stat
+2025-05-06 08:13:38,372 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-06 08:13:53,117 - WARNING -  * Debugger is active!
+2025-05-06 08:13:53,149 - INFO -  * Debugger PIN: 409-810-023
+2025-05-06 08:14:19,128 - INFO -  * Detected change in 'D:\\KERJA\\Bantu Teman\\smartglass-ocr-api\\lib\\ocr_engines.py', reloading
+2025-05-06 08:14:21,296 - INFO -  * Restarting with stat
+2025-05-06 08:14:31,700 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-06 08:14:38,360 - WARNING -  * Debugger is active!
+2025-05-06 08:14:38,393 - INFO -  * Debugger PIN: 409-810-023
+2025-05-06 08:17:04,150 - INFO -  * Detected change in 'D:\\KERJA\\Bantu Teman\\smartglass-ocr-api\\app\\api\\routes.py', reloading
+2025-05-06 08:17:06,231 - INFO -  * Restarting with stat
+2025-05-06 08:17:17,109 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-06 08:17:23,394 - WARNING -  * Debugger is active!
+2025-05-06 08:17:23,539 - INFO -  * Debugger PIN: 409-810-023
+2025-05-06 08:17:36,717 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-06 08:22:27,924 - ERROR - OCR processing timed out for Gambar WhatsApp 2025-05-05 pukul 23.31.18_0edf46f2.jpg
+2025-05-06 08:22:27,925 - INFO - 127.0.0.1 - - [06/May/2025 08:22:27] "POST /api/process HTTP/1.1" 200 -
+2025-05-06 08:27:39,787 - INFO -  * Detected change in 'D:\\KERJA\\Bantu Teman\\smartglass-ocr-api\\lib\\id_card_utils.py', reloading
+2025-05-06 08:27:43,544 - INFO -  * Restarting with stat
+2025-05-06 08:28:15,090 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-06 08:28:19,477 - INFO - EasyOCR initialized successfully
+2025-05-06 08:28:27,381 - WARNING -  * Debugger is active!
+2025-05-06 08:28:27,434 - INFO -  * Debugger PIN: 409-810-023
+2025-05-06 08:29:05,541 - INFO -  * Detected change in 'D:\\KERJA\\Bantu Teman\\smartglass-ocr-api\\lib\\smartglass_ocr.py', reloading
+2025-05-06 08:29:07,316 - INFO -  * Restarting with stat
+2025-05-06 08:29:19,630 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-06 08:29:28,035 - WARNING -  * Debugger is active!
+2025-05-06 08:29:28,079 - INFO -  * Debugger PIN: 409-810-023
+2025-05-06 08:35:28,934 - INFO -  * Detected change in 'D:\\KERJA\\Bantu Teman\\smartglass-ocr-api\\app\\api\\routes.py', reloading
+2025-05-06 08:35:31,357 - INFO -  * Restarting with stat
+2025-05-06 08:35:42,325 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-06 08:35:58,897 - WARNING -  * Debugger is active!
+2025-05-06 08:35:58,975 - INFO -  * Debugger PIN: 409-810-023
+2025-05-06 08:37:07,908 - INFO -  * Detected change in 'D:\\KERJA\\Bantu Teman\\smartglass-ocr-api\\lib\\smartglass_ocr.py', reloading
+2025-05-06 08:37:09,802 - INFO -  * Restarting with stat
+2025-05-06 08:37:23,536 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-06 08:37:34,351 - WARNING -  * Debugger is active!
+2025-05-06 08:37:34,408 - INFO -  * Debugger PIN: 409-810-023
+2025-05-06 08:37:39,935 - ERROR - Error in specialized ID card processing: SmartGlassOCR.process_id_card() got an unexpected keyword argument 'image_path'
+2025-05-06 08:37:44,526 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-06 08:38:54,274 - INFO - 127.0.0.1 - - [06/May/2025 08:38:54] "POST /api/process HTTP/1.1" 200 -
+2025-05-06 08:39:15,611 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-06 08:41:19,100 - INFO - 127.0.0.1 - - [06/May/2025 08:41:19] "POST /api/process HTTP/1.1" 200 -
+2025-05-06 08:42:56,177 - ERROR - Error in specialized ID card processing: SmartGlassOCR.process_id_card() got an unexpected keyword argument 'image_path'
+2025-05-06 08:42:59,006 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-06 08:44:20,071 - INFO - 127.0.0.1 - - [06/May/2025 08:44:20] "POST /api/process HTTP/1.1" 200 -
+2025-05-06 08:45:14,548 - ERROR - Error in specialized ID card processing: SmartGlassOCR.process_id_card() got an unexpected keyword argument 'image_path'
+2025-05-06 08:45:18,358 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-06 08:46:24,768 - INFO - 127.0.0.1 - - [06/May/2025 08:46:24] "POST /api/process HTTP/1.1" 200 -
