@@ -139,7 +139,13 @@ class OCRProcessor:
                 ]
             
             # Generate markdown content
-            md_content = self.markdown_formatter.format_ocr_results(results, original_filename)
+            if isinstance(results, tuple):
+                # Unpack the tuple if it's a tuple
+                result_dict, _ = results
+                md_content = self.markdown_formatter.format_ocr_results(result_dict, original_filename)
+            else:
+                # It's already a dictionary
+                md_content = self.markdown_formatter.format_ocr_results(results, original_filename)
             
             # Save markdown file
             md_filename = self._save_markdown_file(md_content, original_filename)

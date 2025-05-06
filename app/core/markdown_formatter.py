@@ -12,7 +12,7 @@ class MarkdownFormatter:
     """Format OCR results as beautiful Markdown documents"""
     
     @staticmethod
-    def format_ocr_results(results: Dict[str, Any], filename: str) -> str:
+    def format_ocr_results(self, results: Dict[str, Any], filename: str) -> str:
         """
         Convert OCR results to a well-formatted Markdown document
         
@@ -24,6 +24,10 @@ class MarkdownFormatter:
             Markdown formatted string
         """
         md_content = []
+        
+        # Ensure results is a dictionary
+        if not isinstance(results, dict):
+            results = {"status": "error", "message": "Invalid results format"}
         
         # Add frontmatter with metadata
         md_content.append("---")

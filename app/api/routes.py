@@ -157,7 +157,7 @@ def process_file_worker(task_id, file_path, original_filename, language, page, s
             ocr_processor.ocr_engine.config["use_all_available_engines"] = True
             
         # Process the file
-        results, md_filename = ocr_processor.process_file(
+        result = ocr_processor.process_file(
             file_path=file_path,
             original_filename=original_filename,
             language=language,
@@ -166,26 +166,46 @@ def process_file_worker(task_id, file_path, original_filename, language, page, s
             summary_style=summary_style
         )
         
+        # Fix: Check if the result is a tuple and extract its values
+        if isinstance(result, tuple):
+            results, md_filename = result
+        else:
+            # Handle case where result is not a tuple
+            results = result
+            md_filename = ""
+        
+        # Ensure results is a dictionary
+        if not isinstance(results, dict):
+            results = {
+                "status": "error",
+                "message": "Invalid result format from OCR processor",
+                "metadata": {
+                    "processing_time_ms": round((time.time() - active_tasks[task_id]['start_time']) * 1000, 2)
+                }
+            }
+        
         # Convert NumPy types to Python types for JSON serialization
         results = convert_numpy_types(results)
         
         # Ensure we have original_text (in case it's not set by the processor)
-        if 'text' in results and 'original_text' not in results:
+        if isinstance(results, dict) and 'text' in results and 'original_text' not in results:
             results['original_text'] = results['text']
         
         # Clean text and summary in the results
-        if 'text' in results:
+        if isinstance(results, dict) and 'text' in results:
             results['text'] = clean_response_text(results['text'])
-        if 'summary' in results:
+        if isinstance(results, dict) and 'summary' in results:
             results['summary'] = clean_response_text(results['summary'])
-        if 'key_insights' in results and isinstance(results['key_insights'], list):
+        if isinstance(results, dict) and 'key_insights' in results and isinstance(results['key_insights'], list):
             results['key_insights'] = [clean_response_text(insight) for insight in results['key_insights']]
         
         # Enhanced formatting for signage/banners
-        if process_type == 'signage' or ('metadata' in results and results['metadata'].get('is_outdoor_signage')):
+        if process_type == 'signage' or (isinstance(results, dict) and 'metadata' in results and 
+                                        isinstance(results['metadata'], dict) and 
+                                        results['metadata'].get('is_outdoor_signage')):
             # Format a more descriptive response
-            content_type = results['metadata'].get('content_type', 'unknown').title()
-            description = results['metadata'].get('description', '')
+            content_type = results.get('metadata', {}).get('content_type', 'unknown').title()
+            description = results.get('metadata', {}).get('description', '')
             
             # Add content type and description to response
             results['content_type'] = content_type
@@ -196,7 +216,7 @@ def process_file_worker(task_id, file_path, original_filename, language, page, s
             'status': 'complete',
             'response': {
                 'status': results.get('status', 'success'),
-                'message': 'File processed successfully',
+                'message': 'File processed successfully' if results.get('status') != 'error' else results.get('message', 'Processing failed'),
                 'results': results,
                 'markdown_file': md_filename,
                 'markdown_url': f"/api/markdown/{md_filename}"
