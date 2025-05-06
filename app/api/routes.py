@@ -124,6 +124,142 @@ def docs():
     
     return jsonify(documentation)
 
+def extract_ocr_results(result, start_time):
+    """
+    Helper function to handle different result formats from OCR processor
+    including nested tuples and other complex structures
+    
+    Args:
+        result: The result from OCR processor
+        start_time: Start time for calculating processing duration
+        
+    Returns:
+        Tuple of (results dictionary, markdown filename)
+    """
+    results = {}
+    md_filename = ""
+    
+    # Debug information about the result type
+    logger.info(f"OCR result type: {type(result).__name__}")
+    
+    # If result is None
+    if result is None:
+        logger.warning("OCR processor returned None")
+        return {
+            "status": "error",
+            "message": "OCR processing returned None",
+            "metadata": {
+                "processing_time_ms": round((time.time() - start_time) * 1000, 2)
+            }
+        }, ""
+    
+    # If result is a tuple
+    if isinstance(result, tuple):
+        try:
+            logger.info(f"Tuple length: {len(result)}")
+            if len(result) >= 2:
+                # Extract first two elements
+                first_elem, second_elem = result[0], result[1]
+                
+                # Check if first element is a dictionary (results)
+                if isinstance(first_elem, dict):
+                    results = first_elem
+                    # Second element should be string (filename)
+                    if isinstance(second_elem, str):
+                        md_filename = second_elem
+                    else:
+                        logger.warning(f"Second tuple element is not a string: {type(second_elem).__name__}")
+                        md_filename = ""
+                # Check if first element is a tuple (nested tuple)
+                elif isinstance(first_elem, tuple) and len(first_elem) >= 2:
+                    logger.info("Detected nested tuple, extracting from it")
+                    nested_first, nested_second = first_elem[0], first_elem[1]
+                    # Check if nested first element is a dictionary
+                    if isinstance(nested_first, dict):
+                        results = nested_first
+                        # Check if nested second element is a string
+                        if isinstance(nested_second, str):
+                            md_filename = nested_second
+                        else:
+                            logger.warning(f"Nested second element is not a string: {type(nested_second).__name__}")
+                            md_filename = ""
+                    else:
+                        logger.warning(f"Nested first element is not a dict: {type(nested_first).__name__}")
+                        results = {
+                            "status": "error",
+                            "message": f"Invalid nested result structure: {type(nested_first).__name__}",
+                            "metadata": {
+                                "processing_time_ms": round((time.time() - start_time) * 1000, 2)
+                            }
+                        }
+                # If first element isn't a dict or tuple, use second element if it's a dict
+                elif isinstance(second_elem, dict):
+                    results = second_elem
+                    # Use empty string for md_filename
+                    logger.warning(f"First tuple element is not a dict: {type(first_elem).__name__}, using second element")
+                else:
+                    # Neither element is usable
+                    logger.warning(f"Neither tuple element is usable: {type(first_elem).__name__}, {type(second_elem).__name__}")
+                    results = {
+                        "status": "error",
+                        "message": "OCR result tuple contains unrecognized types",
+                        "metadata": {
+                            "processing_time_ms": round((time.time() - start_time) * 1000, 2)
+                        }
+                    }
+            else:
+                # Tuple with fewer than 2 elements
+                logger.warning(f"Tuple doesn't have enough elements: {len(result)}")
+                results = {
+                    "status": "error",
+                    "message": f"Tuple result doesn't have enough elements: {len(result)}",
+                    "metadata": {
+                        "processing_time_ms": round((time.time() - start_time) * 1000, 2)
+                    }
+                }
+        except Exception as e:
+            # Error while processing tuple
+            import traceback
+            logger.error(f"Error extracting results from tuple: {str(e)}\n{traceback.format_exc()}")
+            results = {
+                "status": "error",
+                "message": f"Error extracting results from tuple: {str(e)}",
+                "metadata": {
+                    "processing_time_ms": round((time.time() - start_time) * 1000, 2)
+                }
+            }
+    
+    # If result is a dictionary
+    elif isinstance(result, dict):
+        results = result
+        # No markdown filename in this case
+        md_filename = ""
+    
+    # If result is some other type
+    else:
+        logger.warning(f"Unrecognized result type: {type(result).__name__}")
+        results = {
+            "status": "error",
+            "message": f"Unrecognized result format: {type(result).__name__}",
+            "metadata": {
+                "processing_time_ms": round((time.time() - start_time) * 1000, 2)
+            }
+        }
+    
+    # Ensure results is a dictionary
+    if not isinstance(results, dict):
+        logger.warning(f"Results is not a dictionary: {type(results).__name__}")
+        results = {
+            "status": "error",
+            "message": f"Invalid result format from OCR processor: {type(results).__name__}",
+            "metadata": {
+                "processing_time_ms": round((time.time() - start_time) * 1000, 2)
+            }
+        }
+    
+    return results, md_filename
+
+
 def process_file_worker(task_id, file_path, original_filename, language, page, summary_length, summary_style, process_type):
     """Background worker to process file with OCR"""
     try:
@@ -156,8 +292,9 @@ def process_file_worker(task_id, file_path, original_filename, language, page, s
             ocr_processor.ocr_engine.config["preprocessing_level"] = "auto"
             ocr_processor.ocr_engine.config["use_all_available_engines"] = True
             
-        # Process the file - Perbaikan: tambahkan validasi hasil
+        # Process the file - Enhanced error handling
         try:
+            logger.info(f"Starting OCR processing of file {original_filename}")
             result = ocr_processor.process_file(
                 file_path=file_path,
                 original_filename=original_filename,
@@ -167,23 +304,10 @@ def process_file_worker(task_id, file_path, original_filename, language, page, s
                 summary_style=summary_style
             )
             
-            # Fix: Handle berbagai format result dengan lebih baik
-            results = {}
-            md_filename = ""
+            # Use the extract_ocr_results helper function
+            results, md_filename = extract_ocr_results(result, active_tasks[task_id]['start_time'])
+            logger.info(f"OCR processing completed for {original_filename}")
             
-            if isinstance(result, tuple) and len(result) >= 2:
-                results, md_filename = result
-            elif isinstance(result, dict):
-                results = result
-            else:
-                # Jika format tidak dikenali, buat format standard untuk error
-                results = {
-                    "status": "error",
-                    "message": f"Unrecognized result format: {type(result).__name__}",
-                    "metadata": {
-                        "processing_time_ms": round((time.time() - active_tasks[task_id]['start_time']) * 1000, 2)
-                    }
-                }
         except Exception as e:
             import traceback
             error_trace = traceback.format_exc()
@@ -198,16 +322,6 @@ def process_file_worker(task_id, file_path, original_filename, language, page, s
                 }
             }
             md_filename = ""
-        
-        # Ensure results is a dictionary
-        if not isinstance(results, dict):
-            results = {
-                "status": "error",
-                "message": f"Invalid result format from OCR processor: {type(results).__name__}",
-                "metadata": {
-                    "processing_time_ms": round((time.time() - active_tasks[task_id]['start_time']) * 1000, 2)
-                }
-            }
         
         # Convert NumPy types to Python types for JSON serialization
         results = convert_numpy_types(results)
@@ -830,6 +944,7 @@ def process_file():
         if file_size < 1024 * 1024 or process_type == 'fast':
             try:
                 # Process synchronously
+                logger.info(f"Starting synchronous processing of file: {original_filename}")
                 result = ocr_processor.process_file(
                     file_path=file_path,
                     original_filename=original_filename,
@@ -839,34 +954,16 @@ def process_file():
                     summary_style=summary_style
                 )
                 
-                # Perbaikan: cek tipe result dan handle dengan lebih baik
-                results = {}
-                md_filename = ""
+                # Use the extract_ocr_results helper function
+                logger.debug(f"OCR result type: {type(result).__name__}")
                 
-                # Check if the result is a tuple and extract its values
-                if isinstance(result, tuple) and len(result) >= 2:
-                    results, md_filename = result
-                elif isinstance(result, dict):
-                    results = result
-                else:
-                    # Invalid result format
-                    results = {
-                        "status": "error",
-                        "message": f"Invalid result format from OCR processor: {type(result).__name__}",
-                        "metadata": {
-                            "processing_time_ms": round((time.time() - start_time) * 1000, 2)
-                        }
-                    }
+                # Trace the result structure for debugging
+                if isinstance(result, tuple):
+                    logger.debug(f"Tuple length: {len(result)}")
+                    for i, item in enumerate(result):
+                        logger.debug(f"Tuple item {i} type: {type(item).__name__}")
                 
-                # Ensure results is a dictionary
-                if not isinstance(results, dict):
-                    results = {
-                        "status": "error",
-                        "message": f"Invalid result format from OCR processor: {type(results).__name__}",
-                        "metadata": {
-                            "processing_time_ms": round((time.time() - start_time) * 1000, 2)
-                        }
-                    }
+                results, md_filename = extract_ocr_results(result, start_time)
                 
                 # Convert NumPy types to Python types for JSON serialization
                 results = convert_numpy_types(results)
@@ -894,7 +991,7 @@ def process_file():
                     results['content_type'] = content_type
                     results['description'] = description
                 
-                # FIX: Get status from results for response consistency
+                # Get status from results for response consistency
                 status = results.get('status', 'success')
                 message = results.get('message', 'Processing failed') if status == 'error' else 'File processed successfully'
                 
@@ -907,6 +1004,7 @@ def process_file():
                     'markdown_url': f"/api/markdown/{md_filename}" if md_filename else ""
                 }
                 
+                logger.info(f"Synchronous processing completed: {original_filename}")
                 return jsonify(response)
                 
             except TimeoutError:
