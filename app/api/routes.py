@@ -156,29 +156,54 @@ def process_file_worker(task_id, file_path, original_filename, language, page, s
             ocr_processor.ocr_engine.config["preprocessing_level"] = "auto"
             ocr_processor.ocr_engine.config["use_all_available_engines"] = True
             
-        # Process the file
-        result = ocr_processor.process_file(
-            file_path=file_path,
-            original_filename=original_filename,
-            language=language,
-            page=page,
-            summary_length=summary_length,
-            summary_style=summary_style
-        )
-        
-        # Fix: Check if the result is a tuple and extract its values
-        if isinstance(result, tuple):
-            results, md_filename = result
-        else:
-            # Handle case where result is not a tuple
-            results = result
+        # Process the file - Perbaikan: tambahkan validasi hasil
+        try:
+            result = ocr_processor.process_file(
+                file_path=file_path,
+                original_filename=original_filename,
+                language=language,
+                page=page,
+                summary_length=summary_length,
+                summary_style=summary_style
+            )
+            
+            # Fix: Handle berbagai format result dengan lebih baik
+            results = {}
+            md_filename = ""
+            
+            if isinstance(result, tuple) and len(result) >= 2:
+                results, md_filename = result
+            elif isinstance(result, dict):
+                results = result
+            else:
+                # Jika format tidak dikenali, buat format standard untuk error
+                results = {
+                    "status": "error",
+                    "message": f"Unrecognized result format: {type(result).__name__}",
+                    "metadata": {
+                        "processing_time_ms": round((time.time() - active_tasks[task_id]['start_time']) * 1000, 2)
+                    }
+                }
+        except Exception as e:
+            import traceback
+            error_trace = traceback.format_exc()
+            logger.error(f"Error in OCR processing: {str(e)}\n{error_trace}")
+            
+            # Create standardized error result
+            results = {
+                "status": "error",
+                "message": f"OCR processing error: {str(e)}",
+                "metadata": {
+                    "processing_time_ms": round((time.time() - active_tasks[task_id]['start_time']) * 1000, 2)
+                }
+            }
             md_filename = ""
         
         # Ensure results is a dictionary
         if not isinstance(results, dict):
             results = {
                 "status": "error",
-                "message": "Invalid result format from OCR processor",
+                "message": f"Invalid result format from OCR processor: {type(results).__name__}",
                 "metadata": {
                     "processing_time_ms": round((time.time() - active_tasks[task_id]['start_time']) * 1000, 2)
                 }
@@ -204,12 +229,13 @@ def process_file_worker(task_id, file_path, original_filename, language, page, s
                                         isinstance(results['metadata'], dict) and 
                                         results['metadata'].get('is_outdoor_signage')):
             # Format a more descriptive response
-            content_type = results.get('metadata', {}).get('content_type', 'unknown').title()
-            description = results.get('metadata', {}).get('description', '')
-            
-            # Add content type and description to response
-            results['content_type'] = content_type
-            results['description'] = description
+            if isinstance(results.get('metadata'), dict):
+                content_type = results['metadata'].get('content_type', 'unknown').title()
+                description = results['metadata'].get('description', '')
+                
+                # Add content type and description to response
+                results['content_type'] = content_type
+                results['description'] = description
         
         # FIX: Get status from results for response consistency
         status = results.get('status', 'success')
@@ -223,7 +249,7 @@ def process_file_worker(task_id, file_path, original_filename, language, page, s
                 'message': message,
                 'results': results,
                 'markdown_file': md_filename,
-                'markdown_url': f"/api/markdown/{md_filename}"
+                'markdown_url': f"/api/markdown/{md_filename}" if md_filename else ""
             }
         }
         
@@ -491,7 +517,13 @@ def _convert_pdf_to_image(pdf_path: str, page_num: int = 0):
     Returns:
         Tuple of (path to converted image, total pages)
     """
-    if not 'PDF2IMAGE_AVAILABLE' in globals() or not PDF2IMAGE_AVAILABLE:
+    # Perbaikan: tambahkan pemeriksaan global variable terlebih dahulu
+    try:
+        # Periksa ketersediaan pdf2image
+        import pdf2image
+        PDF2IMAGE_AVAILABLE = True
+    except ImportError:
+        PDF2IMAGE_AVAILABLE = False
         logger.error("pdf2image library not available")
         return None, 0
         
@@ -701,9 +733,20 @@ def process_file():
                         language=language
                     )
                     
-                    # Add processing time
-                    processing_time = time.time() - start_time
-                    results['metadata']['processing_time_ms'] = round(processing_time * 1000, 2)
+                    # Perbaikan: pastikan results adalah dictionary
+                    if not isinstance(results, dict):
+                        results = {
+                            "status": "error",
+                            "message": f"Invalid result format from ID card OCR processor: {type(results).__name__}",
+                            "metadata": {
+                                "processing_time_ms": round((time.time() - start_time) * 1000, 2)
+                            }
+                        }
+                    else:
+                        # Add processing time
+                        if 'metadata' not in results:
+                            results['metadata'] = {}
+                        results['metadata']['processing_time_ms'] = round((time.time() - start_time) * 1000, 2)
                     
                     # Generate markdown file
                     md_content = ocr_processor.markdown_formatter.format_ocr_results(results, original_filename)
@@ -796,19 +839,30 @@ def process_file():
                     summary_style=summary_style
                 )
                 
+                # Perbaikan: cek tipe result dan handle dengan lebih baik
+                results = {}
+                md_filename = ""
+                
                 # Check if the result is a tuple and extract its values
-                if isinstance(result, tuple):
+                if isinstance(result, tuple) and len(result) >= 2:
                     results, md_filename = result
-                else:
-                    # Handle case where result is not a tuple
+                elif isinstance(result, dict):
                     results = result
-                    md_filename = ""
+                else:
+                    # Invalid result format
+                    results = {
+                        "status": "error",
+                        "message": f"Invalid result format from OCR processor: {type(result).__name__}",
+                        "metadata": {
+                            "processing_time_ms": round((time.time() - start_time) * 1000, 2)
+                        }
+                    }
                 
                 # Ensure results is a dictionary
                 if not isinstance(results, dict):
                     results = {
                         "status": "error",
-                        "message": "Invalid result format from OCR processor",
+                        "message": f"Invalid result format from OCR processor: {type(results).__name__}",
                         "metadata": {
                             "processing_time_ms": round((time.time() - start_time) * 1000, 2)
                         }
@@ -830,7 +884,8 @@ def process_file():
                     results['key_insights'] = [clean_response_text(insight) for insight in results['key_insights']]
                 
                 # Enhanced formatting for signage/banners
-                if process_type == 'signage' or ('metadata' in results and results['metadata'].get('is_outdoor_signage')):
+                if process_type == 'signage' or ('metadata' in results and isinstance(results['metadata'], dict) and 
+                                              results['metadata'].get('is_outdoor_signage')):
                     # Format a more descriptive response
                     content_type = results['metadata'].get('content_type', 'unknown').title()
                     description = results['metadata'].get('description', '')
@@ -849,7 +904,7 @@ def process_file():
                     'message': message,
                     'results': results,
                     'markdown_file': md_filename,
-                    'markdown_url': f"/api/markdown/{md_filename}"
+                    'markdown_url': f"/api/markdown/{md_filename}" if md_filename else ""
                 }
                 
                 return jsonify(response)
@@ -1079,4 +1134,3 @@ def api_home():
             {'path': '/api/task_status/<task_id>', 'method': 'GET', 'description': 'Check status of a long-running OCR task'}
         ]
     })
-    
