@@ -27,5 +27,5 @@ if __name__ == '__main__':
     print(f"→ API documentation: http://localhost:{port}/api/docs")
     print("=" * 70 + "\n")
     
-    # Run the app with cleaner output
-    app.run(host='0.0.0.0', port=port, debug=debug)
+    # Add use_reloader=False to prevent duplicate messages
+    app.run(host='0.0.0.0', port=port, debug=debug, use_reloader=False)
