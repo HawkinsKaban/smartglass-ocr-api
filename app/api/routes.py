@@ -211,12 +211,16 @@ def process_file_worker(task_id, file_path, original_filename, language, page, s
             results['content_type'] = content_type
             results['description'] = description
         
-        # Update task status to complete
+        # FIX: Get status from results for response consistency
+        status = results.get('status', 'success')
+        message = results.get('message', 'Processing failed') if status == 'error' else 'File processed successfully'
+        
+        # Update task status with consistent status and message
         active_tasks[task_id] = {
-            'status': 'complete',
+            'status': 'complete' if status != 'error' else 'error',
             'response': {
-                'status': results.get('status', 'success'),
-                'message': 'File processed successfully' if results.get('status') != 'error' else results.get('message', 'Processing failed'),
+                'status': status,
+                'message': message,
                 'results': results,
                 'markdown_file': md_filename,
                 'markdown_url': f"/api/markdown/{md_filename}"
@@ -234,7 +238,15 @@ def process_file_worker(task_id, file_path, original_filename, language, page, s
             'response': {
                 'status': 'error',
                 'message': f'Error processing file: {str(e)}',
-                'metadata': {'processing_time_ms': time.time() - active_tasks[task_id]['start_time']}
+                'results': {
+                    'status': 'error',
+                    'message': f'Error processing file: {str(e)}',
+                    'metadata': {
+                        'processing_time_ms': round((time.time() - active_tasks[task_id]['start_time']) * 1000, 2)
+                    }
+                },
+                'markdown_file': '',
+                'markdown_url': ''
             }
         }
 
@@ -827,10 +839,14 @@ def process_file():
                     results['content_type'] = content_type
                     results['description'] = description
                 
-                # Prepare response
+                # FIX: Get status from results for response consistency
+                status = results.get('status', 'success')
+                message = results.get('message', 'Processing failed') if status == 'error' else 'File processed successfully'
+                
+                # Prepare response with consistent status and message
                 response = {
-                    'status': results.get('status', 'success'),
-                    'message': 'File processed successfully',
+                    'status': status,
+                    'message': message,
                     'results': results,
                     'markdown_file': md_filename,
                     'markdown_url': f"/api/markdown/{md_filename}"
@@ -851,9 +867,15 @@ def process_file():
                 return jsonify({
                     'status': 'error',
                     'message': f'Error processing file: {str(e)}',
-                    'metadata': {
-                        'processing_time_ms': round((time.time() - start_time) * 1000, 2)
-                    }
+                    'results': {
+                        'status': 'error',
+                        'message': f'Error processing file: {str(e)}',
+                        'metadata': {
+                            'processing_time_ms': round((time.time() - start_time) * 1000, 2)
+                        }
+                    },
+                    'markdown_file': '',
+                    'markdown_url': ''
                 }), 500
         
         # For asynchronous processing (larger files or complex processing)
@@ -911,9 +933,12 @@ def check_task_status(task_id):
     if task['status'] in ['complete', 'error']:
         response = task['response']
         
-        # Ensure consistent status messages
-        if task['status'] == 'error' and 'status' in response and response['status'] != 'error':
+        # FIX: Ensure status and message consistency
+        # If the results have an error status, make sure the top-level response reflects that
+        if 'results' in response and isinstance(response['results'], dict) and response['results'].get('status') == 'error':
+            # Update top-level status and message to match results
             response['status'] = 'error'
+            response['message'] = response['results'].get('message', 'Processing failed')
         
         # Convert NumPy types to Python types for JSON serialization
         response = convert_numpy_types(response)
@@ -1054,3 +1079,4 @@ def api_home():
             {'path': '/api/task_status/<task_id>', 'method': 'GET', 'description': 'Check status of a long-running OCR task'}
         ]
     })
+    
