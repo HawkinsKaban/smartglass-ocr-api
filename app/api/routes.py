@@ -623,6 +623,9 @@ def _convert_pdf_to_image(pdf_path: str, page_num: int = 0):
 @api_bp.route('/process', methods=['POST'])
 def process_file():
     """Process an uploaded file with OCR and generate markdown"""
+    # Initialize start_time at the beginning of the function
+    start_time = time.time()
+    
     # Check if file is included in the request
     if 'file' not in request.files:
         return jsonify({'status': 'error', 'message': 'No file part in the request'}), 400
@@ -847,7 +850,10 @@ def process_file():
                 logger.error(f"Error processing file: {str(e)}\n{traceback.format_exc()}")
                 return jsonify({
                     'status': 'error',
-                    'message': f'Error processing file: {str(e)}'
+                    'message': f'Error processing file: {str(e)}',
+                    'metadata': {
+                        'processing_time_ms': round((time.time() - start_time) * 1000, 2)
+                    }
                 }), 500
         
         # For asynchronous processing (larger files or complex processing)
@@ -884,7 +890,10 @@ def process_file():
         logger.error(f"Error in process_file: {str(e)}\n{traceback.format_exc()}")
         return jsonify({
             'status': 'error',
-            'message': f'Error processing file: {str(e)}'
+            'message': f'Error processing file: {str(e)}',
+            'metadata': {
+                'processing_time_ms': round((time.time() - start_time) * 1000, 2)
+            }
         }), 500
 
 @api_bp.route('/task_status/<task_id>', methods=['GET'])
