@@ -410,242 +410,211 @@ class SmartGlassOCR:
                 }
             }
 
-    def process_file(self, file_path: str, original_filename: str = None, language: str = None, 
-                    page: int = 0, summary_length: int = None, 
-                    summary_style: str = None) -> Tuple[dict, str]:
+    def _process_image(self, image_path: str, language: str) -> dict:
         """
-        Process a file (image or PDF) and extract text with summarization
+        Enhanced image processing with improved text detection in various conditions
         
         Args:
-            file_path: Path to the file
-            original_filename: Original filename (if different from file_path)
-            language: OCR language (default from config)
-            page: Page number for PDF (0-based)
-            summary_length: Maximum summary length
-            summary_style: Style of summary (concise, detailed, bullets, structured)
+            image_path: Path to the image
+            language: OCR language
             
         Returns:
-            Tuple of (OCR results dict, Markdown filename)
+            Dictionary with OCR results
         """
-        start_time = time.time()
-        
-        # Set original filename if not provided
-        if original_filename is None:
-            original_filename = os.path.basename(file_path)
-        
-        # Use default values if not provided
-        language = language or self.config["default_language"]
-        summary_length = summary_length or self.config["summary_length"]
-        summary_style = summary_style or self.config["summary_style"]
-        
-        # Check file extension
-        ext = os.path.splitext(file_path)[1][1:].lower()
-        if ext not in self.config["allowed_extensions"]:
-            return {"status": "error", "message": "Unsupported file type"}, ""
-        
-        try:
-            # Handle PDF vs image
-            is_pdf = ext == 'pdf'
-            
-            if is_pdf:
-                if not PDF2IMAGE_AVAILABLE:
-                    return {"status": "error", "message": "PDF processing not available"}, ""
-                
-                # Convert PDF to image
-                logger.info(f"Converting PDF to image: {file_path}, page {page}")
-                image_path, total_pages = self._convert_pdf_to_image(file_path, page)
-                
-                if not image_path:
-                    return {"status": "error", "message": "Failed to convert PDF to image"}, ""
-                    
-                # Process the image
-                image_results = self._process_image(image_path, language)
-                
-                # Add PDF-specific metadata
-                if "metadata" not in image_results:
-                    image_results["metadata"] = {}
-                    
-                image_results["metadata"].update({
-                    "file_type": "pdf",
-                    "page": page,
-                    "total_pages": total_pages
-                })
-                
-                # Clean up temporary image
-                try:
-                    os.remove(image_path)
-                except Exception as e:
-                    logger.warning(f"Failed to remove temporary PDF image: {e}")
-            else:
-                # Process the image directly
-                logger.info(f"Processing image: {file_path}")
-                image_results = self._process_image(file_path, language)
-                
-                if "metadata" not in image_results:
-                    image_results["metadata"] = {}
-                    
-                image_results["metadata"]["file_type"] = "image"
-            
-            # Generate summary if text was extracted successfully
-            if image_results["status"] in ["success", "partial_success"] and image_results.get("text"):
-                from .text_processing import generate_summary, detect_document_structure, extract_key_insights
-                
-                text = image_results.get("text", "")
-                
-                # Use enhanced extractive summarization
-                summary = generate_summary(text, max_length=summary_length, style=summary_style)
-                image_results["summary"] = summary
-                
-                # Extract document structure
-                structure = detect_document_structure(text)
-                image_results["document_structure"] = structure.value
-                
-                # Extract key insights if enabled
-                if self.config["extract_key_insights"] and len(text) > 200:
-                    insights = extract_key_insights(text)
-                    image_results["key_insights"] = insights
-            else:
-                image_results["summary"] = ""
-            
-            # Add processing time
-            processing_time = time.time() - start_time
-            
-            if "metadata" not in image_results:
-                image_results["metadata"] = {}
-                
-            image_results["metadata"]["processing_time_ms"] = round(processing_time * 1000, 2)
-            
-            # Update processing stats
-            self._update_processing_stats(image_results, processing_time)
-            
-            # Apply organized output format if enabled
-            if self.config["organized_output_format"]:
-                from .information_extraction import organize_output
-                image_results = organize_output(image_results)
-            
-            # Generate markdown file
-            md_filename = ""
-            if self.markdown_formatter:
-                try:
-                    md_content = self.markdown_formatter.format_ocr_results(image_results, original_filename)
-                    md_filename = self._save_markdown_file(md_content, original_filename)
-                except Exception as e:
-                    logger.error(f"Error generating markdown: {e}")
-            
-            return image_results, md_filename
-            
-        except Exception as e:
-            logger.error(f"Error processing file: {e}")
-            import traceback
-            logger.error(traceback.format_exc())
-            return {
-                "status": "error", 
-                "message": f"Processing failed: {str(e)}",
-                "metadata": {
-                    "processing_time_ms": round((time.time() - start_time) * 1000, 2)
-                }
-            }, ""
-    
-    def _process_image(self, image_path: str, language: str) -> dict:
-        """Process an image through enhanced pipeline and OCR"""
         if not CV2_AVAILABLE or not PIL_AVAILABLE:
             return {"status": "error", "message": "Required image processing libraries not available"}
         
         try:
-            # Check for ID card before expensive processing
+            # Step 1: Enhanced file type detection
             is_id_card = self._check_if_id_card(image_path)
             if is_id_card:
                 logger.info("ID card detected, using optimized ID card processing")
                 return self.process_id_card(image_path, language=language)
             
-            # Step 1: Read and analyze the image to determine optimal processing
-            image = cv2.imread(image_path)
-            
-            if image is None:
-                # Try with PIL if OpenCV fails
-                try:
+            # Step 2: Read and analyze the image
+            image = None
+            try:
+                # Try multiple reading methods for robustness
+                image = cv2.imread(image_path)
+                
+                if image is None:
+                    # If OpenCV fails, try with PIL
                     pil_image = Image.open(image_path)
                     if pil_image.mode == 'RGBA':
                         pil_image = pil_image.convert('RGB')
+                    
+                    # Convert PIL image to numpy array
+                    image = np.array(pil_image)
+                    
+                    # Convert RGB to BGR (OpenCV format)
+                    if len(image.shape) == 3 and image.shape[2] == 3:
+                        image = image[:, :, ::-1].copy()
+                
+                if image is None or image.size == 0:
+                    # If both methods fail, try to convert to JPG and read again
                     temp_jpg = f"{image_path}_temp.jpg"
-                    pil_image.save(temp_jpg)
+                    pil_image = Image.open(image_path)
+                    pil_image.convert('RGB').save(temp_jpg, quality=95)
                     image = cv2.imread(temp_jpg)
-                    os.remove(temp_jpg)
-                except Exception as e:
-                    logger.error(f"Error converting image: {e}")
-                    return {"status": "error", "message": "Failed to read image"}
-            
+                    try:
+                        os.remove(temp_jpg)
+                    except:
+                        pass
+            except Exception as e:
+                logger.error(f"Error reading image: {e}")
+                
             if image is None:
                 return {"status": "error", "message": "Failed to read image file"}
             
-            # Step 2: Analyze image with enhanced analysis for better type detection
+            # Step 3: Enhanced image analysis
             image_stats = self.image_processor.analyze_image(image)
             
-            # For ID cards, force lightweight mode for faster processing
-            if image_stats.image_type == ImageType.ID_CARD:
-                # Force lightweight mode for ID cards
-                self.config["lightweight_mode"] = True
-                # Force use of a single OCR engine (Tesseract works best for structured IDs)
-                self.config["use_all_available_engines"] = False
-                # Set higher timeout for ID cards
-                self.config["ocr_timeout"] = self.config.get("id_card_timeout", 600)
-                logger.info("Detected ID card, enabling optimized settings for faster processing")
-                # Use the specialized ID card processor
-                return self.process_id_card(image_path, language=language)
+            # Step 4: Apply advanced image corrections based on image type
+            if image_stats.image_type in [ImageType.LOW_QUALITY, ImageType.NATURAL]:
+                # Apply additional corrections for low quality images
+                try:
+                    # Check for blur and apply correction
+                    if image_stats.blur < 100:
+                        # Apply sharpening to reduce blur
+                        kernel = np.array([[-1,-1,-1], [-1,9,-1], [-1,-1,-1]])
+                        image = cv2.filter2D(image, -1, kernel)
+                    
+                    # Check for low contrast and apply correction
+                    if image_stats.contrast < 40:
+                        # Apply CLAHE for better contrast
+                        if len(image.shape) > 2:
+                            lab = cv2.cvtColor(image, cv2.COLOR_BGR2LAB)
+                            l, a, b = cv2.split(lab)
+                            clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(8,8))
+                            cl = clahe.apply(l)
+                            merged = cv2.merge((cl, a, b))
+                            image = cv2.cvtColor(merged, cv2.COLOR_LAB2BGR)
+                        else:
+                            clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(8,8))
+                            image = clahe.apply(image)
+                    
+                    # Check for uneven lighting
+                    if image_stats.brightness < 50 or image_stats.brightness > 200:
+                        # Apply adaptive histogram equalization
+                        if len(image.shape) > 2:
+                            hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+                            h, s, v = cv2.split(hsv)
+                            clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
+                            v = clahe.apply(v)
+                            merged = cv2.merge((h, s, v))
+                            image = cv2.cvtColor(merged, cv2.COLOR_HSV2BGR)
+                        else:
+                            clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
+                            image = clahe.apply(image)
+                    
+                    # If there's perspective distortion, correct it
+                    if image_stats.image_type == ImageType.NATURAL and self.config.get("perspective_correction", True):
+                        corrected = self._try_perspective_correction(image)
+                        if corrected is not None:
+                            image = corrected
+                except Exception as e:
+                    logger.warning(f"Advanced image correction failed: {e}")
             
-            logger.info(f"Enhanced image analysis: {image_stats.image_type.value}, " 
-                    f"{image_stats.width}x{image_stats.height}, "
-                    f"brightness: {image_stats.brightness:.1f}, "
-                    f"contrast: {image_stats.contrast:.1f}, "
-                    f"blur: {image_stats.blur:.1f}")
-            
-            # Step 3: Determine the best processing strategy based on image type and stats
+            # Step 5: Improved strategy selection
             strategy = self.image_processor.determine_processing_strategy(image_stats)
-            logger.info(f"Using processing strategy: {strategy.value}")
+            logger.info(f"Enhanced image analysis: {image_stats.image_type.value}, " 
+                      f"{image_stats.width}x{image_stats.height}, "
+                      f"brightness: {image_stats.brightness:.1f}, "
+                      f"contrast: {image_stats.contrast:.1f}")
+            logger.info(f"Using improved processing strategy: {strategy.value}")
             
-            # If auto rotation is enabled, check and rotate if needed
-            if self.config["auto_rotate"] and image_stats.image_type != ImageType.NATURAL:
-                image = self.image_processor.auto_rotate(image)
+            # Step 6: Auto orientation correction if needed
+            if self.config.get("auto_rotate", True) and image_stats.image_type not in [ImageType.NATURAL, ImageType.SIGNAGE]:
+                # Enhanced auto-rotation detection
+                try:
+                    import pytesseract
+                    
+                    # Convert to grayscale if needed
+                    if len(image.shape) > 2:
+                        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+                    else:
+                        gray = image
+                    
+                    # Get orientation info from Tesseract
+                    osd = pytesseract.image_to_osd(gray)
+                    angle = int(re.search(r'Rotate: (\d+)', osd).group(1))
+                    
+                    if angle != 0:
+                        logger.info(f"Auto-rotating image by {angle} degrees")
+                        
+                        # Rotate image
+                        h, w = image.shape[:2]
+                        center = (w // 2, h // 2)
+                        rotation_matrix = cv2.getRotationMatrix2D(center, angle, 1.0)
+                        image = cv2.warpAffine(image, rotation_matrix, (w, h), 
+                                            flags=cv2.INTER_CUBIC, borderMode=cv2.BORDER_REPLICATE)
+                except Exception as e:
+                    logger.warning(f"Auto-rotation detection failed: {e}")
+                    
+                    # Fallback to simpler heuristic-based rotation
+                    image = self.image_processor.auto_rotate(image)
             
-            # Step 4: Apply optimized preprocessing with enhanced methods
+            # Step 7: Apply improved preprocessing with enhanced methods
             processed_images, image_data = self.image_processor.preprocess_image(image, image_stats, strategy)
             
-            # Save debug images if enabled
-            if self.config["save_debug_images"]:
-                self._save_debug_images(image_data, image_path)
-            
-            # Step 5: Perform OCR using the optimal engine sequence with improved confidence scoring
+            # Step 8: Apply multi-engine OCR with improved confidence scoring
             from .ocr_engines import OCREngineManager
             
-            # Initialize OCR engine manager
-            ocr_manager = OCREngineManager(self.config)
+            # Initialize OCR engine manager with custom configuration for this image
+            custom_config = self.config.copy()
             
-            # Perform OCR
+            # Tailor OCR approach based on image type
+            if image_stats.image_type == ImageType.ID_CARD:
+                custom_config["use_all_available_engines"] = False  # Only use Tesseract for ID cards
+                custom_config["lightweight_mode"] = True
+            elif image_stats.image_type == ImageType.HANDWRITTEN:
+                # For handwritten text, prioritize EasyOCR if available
+                if "easyocr" in self.ocr_engines and self.ocr_engines["easyocr"]["available"]:
+                    custom_config["preferred_engine"] = "easyocr"
+            elif image_stats.image_type == ImageType.SIGNAGE:
+                # For signage, try all engines with aggressive preprocessing
+                custom_config["use_all_available_engines"] = True
+                custom_config["preprocessing_level"] = "aggressive"
+            
+            ocr_manager = OCREngineManager(custom_config)
+            
+            # Perform OCR with multiple engines
             best_engine, text, confidence, layout_info = ocr_manager.perform_ocr(
                 processed_images, image_data, language, image_stats
             )
             
-            # Step 6: Apply enhanced rule-based text correction if enabled
-            if self.config["enable_text_correction"] and len(text) > 10:
+            # Step 9: Apply enhanced language-specific text correction
+            if self.config.get("enable_text_correction", True) and len(text) > 10:
                 from .text_processing import post_process_text
+                
+                # Detect language for language-specific corrections
+                from .text_processing import detect_language
+                detected_language = detect_language(text)
+                
+                # Apply language-specific corrections
                 text = post_process_text(text, image_stats.image_type)
+                
+                # Apply additional corrections for Indonesian text
+                if detected_language == 'ind':
+                    # Fix common Indonesian OCR errors
+                    text = self._fix_indonesian_text(text)
             
-            # Step 7: Clean and format the extracted text with improved formatting
+            # Step 10: Apply better text formatting and organization
             from .text_processing import format_text
             formatted_text = format_text(text, layout_info)
             
-            # Step 8: Extract additional information with rule-based methods
+            # Step 11: Extract additional information
             from .text_processing import detect_language
             detected_language = detect_language(formatted_text)
             
             # Extract structured information if enabled
             structured_info = None
-            if self.config["enable_structured_extraction"] and formatted_text:
+            if self.config.get("enable_structured_extraction", True) and formatted_text:
                 from .information_extraction import extract_structured_info
                 structured_info = extract_structured_info(formatted_text, image_stats.image_type)
             
             # Clean up memory if not caching
-            if not self.config["cache_processed_images"]:
+            if not self.config.get("cache_processed_images", True):
                 image_data.clear()
             
             # Determine status based on enhanced criteria
@@ -655,7 +624,7 @@ class SmartGlassOCR:
             elif confidence < 60:
                 status = "partial_success"
             
-            # Prepare result with enhanced metadata
+            # Step 12: Prepare enhanced result with more detailed metadata
             result = {
                 "status": status,
                 "text": formatted_text,
@@ -666,6 +635,7 @@ class SmartGlassOCR:
                     "image_type": image_stats.image_type.value,
                     "best_engine": best_engine,
                     "layout_info": layout_info,
+                    "processing_strategy": strategy.value,
                     "image_stats": {
                         "width": image_stats.width,
                         "height": image_stats.height,
@@ -683,13 +653,213 @@ class SmartGlassOCR:
             }
             
             return result
-            
+                
         except Exception as e:
             logger.error(f"Error processing image: {e}")
             import traceback
             logger.error(traceback.format_exc())
             return {"status": "error", "message": f"Processing failed: {str(e)}"}
     
+    def _fix_indonesian_text(self, text: str) -> str:
+        """
+        Apply specific corrections for Indonesian text
+        
+        Args:
+            text: Indonesian text with potential OCR errors
+            
+        Returns:
+            Corrected text
+        """
+        if not text:
+            return ""
+        
+        # Common Indonesian OCR errors
+        replacements = {
+            # Letter confusions
+            'l<epada': 'kepada',
+            'l<ami': 'kami',
+            'l<arena': 'karena',
+            'bal1wa': 'bahwa',
+            'adala11': 'adalah',
+            'dala1n': 'dalam',
+            'merniliki': 'memiliki',
+            'rnengenai': 'mengenai',
+            'dalarn': 'dalam',
+            'rnasa': 'masa',
+            
+            # Common word errors
+            'Nornor': 'Nomor',
+            'nornor': 'nomor',
+            'Narna': 'Nama',
+            'narna': 'nama',
+            'Ternpat': 'Tempat',
+            'ternpat': 'tempat',
+            'Tgl': 'Tgl.',
+            'pernerintah': 'pemerintah',
+            'Provinsl': 'Provinsi',
+            'Kabupaten/l<ota': 'Kabupaten/Kota',
+            'Kecarnatan': 'Kecamatan',
+            'Kelura11an': 'Kelurahan',
+            'Jenis l<elarnin': 'Jenis Kelamin',
+            'Golongan Dara11': 'Golongan Darah',
+            'l<ecarnatan': 'Kecamatan',
+            'Agarna': 'Agama',
+            
+            # Fix Indonesian abbreviations
+            'RT/RVV': 'RT/RW',
+            'RT /RW': 'RT/RW',
+            'PROVINSI': 'PROVINSI',
+            'KAB\\.': 'KAB.',
+            'KEL\\.': 'KEL.',
+            'KEC\\.': 'KEC.'
+        }
+        
+        # Apply replacements
+        for error, correction in replacements.items():
+            text = re.sub(r'\b' + re.escape(error) + r'\b', correction, text)
+        
+        # Fix NIK format (16 digits for Indonesian ID cards)
+        nik_matches = re.search(r'(?:NIK|N[l1]K)\s*:?\s*([0-9\s\.,]+)', text, re.IGNORECASE)
+        if nik_matches:
+            nik_raw = nik_matches.group(1)
+            # Extract digits only
+            nik_digits = ''.join(c for c in nik_raw if c.isdigit())
+            if 15 <= len(nik_digits) <= 17:  # Allow for small OCR errors
+                # Enforce 16 digits
+                nik_digits = nik_digits[:16].zfill(16)
+                # Format with spaces for readability
+                formatted_nik = ' '.join([nik_digits[i:i+4] for i in range(0, len(nik_digits), 4)])
+                # Replace in text
+                text = re.sub(r'(?:NIK|N[l1]K)\s*:?\s*[0-9\s\.,]+', f'NIK: {formatted_nik}', text, flags=re.IGNORECASE)
+        
+        # Fix Indonesian date format (DD-MM-YYYY)
+        date_matches = re.finditer(r'(\d{1,2})[/\-\.\\](\d{1,2})[/\-\.\\](\d{2,4})', text)
+        for match in date_matches:
+            day, month, year = match.groups()
+            
+            # Check if this might be a valid date
+            try:
+                day_int = int(day)
+                month_int = int(month)
+                year_int = int(year)
+                
+                if 1 <= day_int <= 31 and 1 <= month_int <= 12:
+                    # Ensure 4-digit year
+                    if year_int < 100:
+                        year_int = 2000 + year_int if year_int < 50 else 1900 + year_int
+                    
+                    formatted_date = f"{day.zfill(2)}-{month.zfill(2)}-{str(year_int).zfill(4)}"
+                    text = text.replace(match.group(0), formatted_date)
+            except:
+                # If date parsing fails, keep original
+                pass
+        
+        # Fix Indonesian address formatting
+        address_pattern = r'(?:ALAMAT|Alamat)\s*:?\s*(.+?)(?=\n\s*(?:RT/RW|PROVINSI|KABUPATEN|KECAMATAN|KELURAHAN|NIK|AGAMA|\s*$))'
+        address_match = re.search(address_pattern, text, re.IGNORECASE | re.DOTALL)
+        if address_match:
+            address = address_match.group(1).strip()
+            # Remove extra spaces and clean up
+            address = re.sub(r'\s+', ' ', address)
+            # Replace in text
+            text = re.sub(address_pattern, f'Alamat: {address}', text, flags=re.IGNORECASE | re.DOTALL)
+        
+        # Add missing colons for Indonesian ID fields
+        id_fields = [
+            'NAMA', 'TEMPAT/TGL LAHIR', 'JENIS KELAMIN', 'ALAMAT', 'AGAMA',
+            'STATUS PERKAWINAN', 'PEKERJAAN', 'KEWARGANEGARAAN', 'BERLAKU HINGGA',
+            'GOL. DARAH', 'RT/RW', 'KELURAHAN', 'KECAMATAN', 'PROVINSI', 'KABUPATEN'
+        ]
+        
+        for field in id_fields:
+            # Pattern: field name without colon followed by text
+            pattern = f'({field})\s+([^\n:]+)'
+            replacement = f'\\1: \\2'
+            text = re.sub(pattern, replacement, text, flags=re.IGNORECASE)
+        
+        return text
+
+    def _try_perspective_correction(self, image):
+        """
+        Attempt to correct perspective distortion in images
+        
+        Args:
+            image: Input image with possible perspective distortion
+            
+        Returns:
+            Corrected image or None if correction fails
+        """
+        try:
+            import cv2
+            import numpy as np
+            
+            # Convert to grayscale
+            if len(image.shape) > 2:
+                gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+            else:
+                gray = image
+                
+            # Blur and find edges
+            blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+            edges = cv2.Canny(blurred, 75, 200)
+            
+            # Find contours
+            contours, _ = cv2.findContours(edges, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+            
+            # Sort contours by area (largest first)
+            contours = sorted(contours, key=cv2.contourArea, reverse=True)
+            
+            # Look for rectangular contours
+            for contour in contours[:5]:  # Check only the 5 largest contours
+                peri = cv2.arcLength(contour, True)
+                approx = cv2.approxPolyDP(contour, 0.02 * peri, True)
+                
+                # If we have a quadrilateral
+                if len(approx) == 4:
+                    # Get bounding rect corners
+                    rect = np.zeros((4, 2), dtype="float32")
+                    
+                    # Extract corners from approx
+                    for i in range(4):
+                        rect[i] = approx[i][0]
+                    
+                    # Order the corners
+                    rect = order_points(rect)
+                    
+                    # Calculate width and height
+                    (tl, tr, br, bl) = rect
+                    width_a = np.sqrt(((br[0] - bl[0]) ** 2) + ((br[1] - bl[1]) ** 2))
+                    width_b = np.sqrt(((tr[0] - tl[0]) ** 2) + ((tr[1] - tl[1]) ** 2))
+                    height_a = np.sqrt(((tr[0] - br[0]) ** 2) + ((tr[1] - br[1]) ** 2))
+                    height_b = np.sqrt(((tl[0] - bl[0]) ** 2) + ((tl[1] - bl[1]) ** 2))
+                    
+                    # Use max width and height
+                    max_width = max(int(width_a), int(width_b))
+                    max_height = max(int(height_a), int(height_b))
+                    
+                    # Define destination points
+                    dst = np.array([
+                        [0, 0],
+                        [max_width - 1, 0],
+                        [max_width - 1, max_height - 1],
+                        [0, max_height - 1]
+                    ], dtype="float32")
+                    
+                    # Calculate perspective transform
+                    M = cv2.getPerspectiveTransform(rect, dst)
+                    warped = cv2.warpPerspective(image, M, (max_width, max_height))
+                    
+                    # Check if warped image makes sense
+                    if warped.shape[0] > 100 and warped.shape[1] > 100:
+                        return warped
+            
+            # No suitable quadrilateral found
+            return None
+            
+        except Exception as e:
+            logger.warning(f"Perspective correction failed: {e}")
+            return None
+
     def _check_if_id_card(self, image_path: str) -> bool:
         """Quick check if an image is an ID card to use optimized processing"""
         try:
@@ -962,10 +1132,9 @@ class SmartGlassOCR:
         self.memory_manager.clear_cache()
         logger.info("Cache cleared")
 
-
     def process_file(self, file_path: str, original_filename: str = None, language: str = None, 
                     page: int = 0, summary_length: int = None, 
-                    summary_style: str = None) -> dict:
+                    summary_style: str = None) -> Tuple[dict, str]:
         """
         Process a file (image or PDF) and extract text with summarization
         
@@ -978,7 +1147,7 @@ class SmartGlassOCR:
             summary_style: Style of summary (concise, detailed, bullets, structured)
             
         Returns:
-            Dictionary with OCR results
+            Tuple of (OCR results dict, Markdown filename)
         """
         start_time = time.time()
         
@@ -994,7 +1163,7 @@ class SmartGlassOCR:
         # Check file extension
         ext = os.path.splitext(file_path)[1][1:].lower()
         if ext not in self.config["allowed_extensions"]:
-            return {"status": "error", "message": "Unsupported file type"}
+            return {"status": "error", "message": "Unsupported file type"}, ""
         
         try:
             # Handle PDF vs image
@@ -1002,23 +1171,22 @@ class SmartGlassOCR:
             
             if is_pdf:
                 if not PDF2IMAGE_AVAILABLE:
-                    return {"status": "error", "message": "PDF processing not available"}
+                    return {"status": "error", "message": "PDF processing not available"}, ""
                 
                 # Convert PDF to image
                 logger.info(f"Converting PDF to image: {file_path}, page {page}")
                 image_path, total_pages = self._convert_pdf_to_image(file_path, page)
                 
                 if not image_path:
-                    return {"status": "error", "message": "Failed to convert PDF to image"}
+                    return {"status": "error", "message": "Failed to convert PDF to image"}, ""
                     
                 # Process the image
                 image_results = self._process_image(image_path, language)
                 
-                # Ensure metadata exists
+                # Add PDF-specific metadata
                 if "metadata" not in image_results:
                     image_results["metadata"] = {}
-                
-                # Add PDF-specific metadata
+                    
                 image_results["metadata"].update({
                     "file_type": "pdf",
                     "page": page,
@@ -1035,7 +1203,6 @@ class SmartGlassOCR:
                 logger.info(f"Processing image: {file_path}")
                 image_results = self._process_image(file_path, language)
                 
-                # Ensure metadata exists
                 if "metadata" not in image_results:
                     image_results["metadata"] = {}
                     
@@ -1065,7 +1232,6 @@ class SmartGlassOCR:
             # Add processing time
             processing_time = time.time() - start_time
             
-            # Ensure metadata exists
             if "metadata" not in image_results:
                 image_results["metadata"] = {}
                 
@@ -1079,7 +1245,16 @@ class SmartGlassOCR:
                 from .information_extraction import organize_output
                 image_results = organize_output(image_results)
             
-            return image_results
+            # Generate markdown file
+            md_filename = ""
+            if self.markdown_formatter:
+                try:
+                    md_content = self.markdown_formatter.format_ocr_results(image_results, original_filename)
+                    md_filename = self._save_markdown_file(md_content, original_filename)
+                except Exception as e:
+                    logger.error(f"Error generating markdown: {e}")
+            
+            return image_results, md_filename
             
         except Exception as e:
             logger.error(f"Error processing file: {e}")
@@ -1091,7 +1266,7 @@ class SmartGlassOCR:
                 "metadata": {
                     "processing_time_ms": round((time.time() - start_time) * 1000, 2)
                 }
-            }
+            }, ""
 
 def process_directory(directory_path, output_dir=None, language=None, summary_length=200, summary_style="concise"):
     """Process all supported files in a directory"""

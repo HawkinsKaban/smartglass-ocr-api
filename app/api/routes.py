@@ -33,7 +33,7 @@ def docs():
     """API Documentation"""
     documentation = {
         'name': 'SmartGlass OCR API',
-        'version': '1.1',  # Updated version
+        'version': '1.2',  # Updated version
         'description': 'RESTful API for SmartGlassOCR engine with Markdown output',
         'endpoints': [
             {
@@ -219,7 +219,15 @@ def process_file_worker(task_id, file_path, original_filename, language, page, s
         }
 
 def detect_image_type(file_path):
-    """Detect image type to choose appropriate processing strategy"""
+    """
+    Enhanced image type detection with improved accuracy for various document types
+    
+    Args:
+        file_path: Path to the image file
+            
+    Returns:
+        Tuple of (image_type, width, height, is_large_file)
+    """
     try:
         import cv2
         import numpy as np
@@ -240,22 +248,29 @@ def detect_image_type(file_path):
         else:
             gray = img
         
-        # Calculate aspect ratio - important for ID card detection
+        # Calculate aspect ratio - important for document type detection
         aspect_ratio = width / height
         
-        # ID card detection - common ID cards have aspect ratios between 1.4 and 1.7
+        # Enhanced ID card detection - common ID cards have aspect ratios between 1.4 and 1.7
         is_id_card = 1.4 < aspect_ratio < 1.7
         
-        # Enhanced ID card detection for Indonesian KTP
+        # Enhanced ID card detection for Indonesian KTP and other IDs
         if is_id_card:
             # Attempt basic OCR to detect KTP keywords
             try:
                 import pytesseract
+                # Use PSM 11 (sparse text) for quick keyword detection
                 text_sample = pytesseract.image_to_string(gray, config='--psm 11 --oem 1')
                 text_lower = text_sample.lower()
                 
                 # Check for patterns common in Indonesian ID cards
-                if "nik" in text_lower or "provinsi" in text_lower or "kabupaten" in text_lower or "ktp" in text_lower:
+                id_keywords = ["nik", "provinsi", "kabupaten", "kecamatan", "ktp", 
+                               "agama", "status perkawinan", "kewarganegaraan",
+                               "identity card", "nama", "tempat/tgl lahir", "gol. darah"]
+                               
+                id_keyword_count = sum(1 for kw in id_keywords if kw in text_lower)
+                
+                if id_keyword_count >= 2:  # Detected at least 2 keywords
                     return "id_card", width, height, file_size > 5 * 1024 * 1024
             except:
                 pass
@@ -268,7 +283,27 @@ def detect_image_type(file_path):
             # ID cards typically have multiple text regions
             if text_regions > 8:
                 return "id_card", width, height, file_size > 5 * 1024 * 1024
-            
+        
+        # Enhanced receipt detection - typically tall and narrow with specific content
+        if aspect_ratio < 0.7:  # Tall and narrow
+            try:
+                import pytesseract
+                text_sample = pytesseract.image_to_string(gray, config='--psm 6 --oem 1')
+                text_lower = text_sample.lower()
+                
+                # Check for receipt keywords
+                receipt_keywords = ["total", "subtotal", "cash", "change", "tax", "amount", 
+                                   "item", "qty", "price", "payment", "receipt", "invoice",
+                                   "jumlah", "tunai", "kembalian", "pajak", "harga", "kasir",
+                                   "pembayaran", "diskon", "tanggal", "waktu"]
+                                   
+                receipt_keyword_count = sum(1 for kw in receipt_keywords if kw in text_lower)
+                
+                if receipt_keyword_count >= 2:
+                    return "receipt", width, height, file_size > 5 * 1024 * 1024
+            except:
+                pass
+        
         # Calculate edge density using Canny
         edges = cv2.Canny(gray, 50, 150)
         edge_pixels = np.count_nonzero(edges)
@@ -285,45 +320,84 @@ def detect_image_type(file_path):
         else:
             has_strong_colors = False
         
-        # Look for rectangular contours (common in signage)
-        has_rectangular_contour = False
-        contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-        
-        for contour in contours:
-            peri = cv2.arcLength(contour, True)
-            approx = cv2.approxPolyDP(contour, 0.04 * peri, True)
+        # Enhanced handwritten text detection
+        # Handwritten text typically has lower edge density and medium contrast
+        is_handwritten = False
+        try:
+            # Calculate texture features for handwriting detection
+            # Handwriting typically has specific texture patterns
+            from skimage.feature import local_binary_pattern
             
-            # If we find a rectangle that's large enough to be a sign
-            if len(approx) == 4 and cv2.contourArea(contour) > 0.3 * (width * height):
-                has_rectangular_contour = True
-                break
+            # Resize for faster processing
+            small_gray = cv2.resize(gray, (min(width, 500), int(min(width, 500) * height / width)))
+            lbp = local_binary_pattern(small_gray, 8, 1, method='uniform')
+            histogram = np.histogram(lbp, bins=10, range=(0, 10))[0] / sum(np.histogram(lbp, bins=10, range=(0, 10))[0])
+            
+            # Handwritten text has specific LBP histogram patterns
+            handwriting_score = histogram[1] + histogram[2] - histogram[8] - histogram[9]
+            
+            # Additional check with edge coherence
+            edge_coherence = cv2.Laplacian(gray, cv2.CV_64F).var()
+            
+            is_handwritten = handwriting_score > 0.1 and edge_density < 0.06 and 20 < contrast < 70 and edge_coherence < 500
+        except:
+            # Fallback to simple heuristic if texture analysis fails
+            is_handwritten = edge_density < 0.05 and 20 < contrast < 60
+        
+        if is_handwritten:
+            return "handwritten", width, height, file_size > 5 * 1024 * 1024
+        
+        # Enhanced table detection
+        # Tables typically have grid-like structures
+        is_table = False
+        try:
+            # Detect horizontal and vertical lines
+            horizontal_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (25, 1))
+            vertical_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (1, 25))
+            
+            horizontal_lines = cv2.morphologyEx(edges, cv2.MORPH_OPEN, horizontal_kernel, iterations=2)
+            vertical_lines = cv2.morphologyEx(edges, cv2.MORPH_OPEN, vertical_kernel, iterations=2)
+            
+            # Combine lines
+            table_structure = cv2.add(horizontal_lines, vertical_lines)
+            
+            # Count potential cells in the table
+            cell_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
+            table_structure = cv2.dilate(table_structure, cell_kernel, iterations=1)
+            contours, _ = cv2.findContours(table_structure, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            
+            # If we have enough potential cells and good ratio of horizontal/vertical lines
+            horizontal_lines_count = np.count_nonzero(horizontal_lines) / (width * 3)  # Normalized by width
+            vertical_lines_count = np.count_nonzero(vertical_lines) / (height * 3)  # Normalized by height
+            
+            is_table = (len(contours) > 5 and 
+                      horizontal_lines_count > 0.05 and 
+                      vertical_lines_count > 0.05 and
+                      0.2 < horizontal_lines_count / max(vertical_lines_count, 0.001) < 5)
+            
+            if is_table:
+                return "table", width, height, file_size > 5 * 1024 * 1024
+        except:
+            pass
         
         # Detect if image is a sign/banner
         is_signage = (
             (contrast > 60 or has_strong_colors) and  # Good contrast or strong colors
             (edge_density < 0.08) and  # Not too dense with edges
-            (aspect_ratio > 1.5 or aspect_ratio < 0.67 or has_rectangular_contour)  # Wide/tall or has rectangular border
+            (aspect_ratio > 1.5 or aspect_ratio < 0.67)  # Wide/tall
         )
         
         if is_signage:
             return "signage", width, height, file_size > 5 * 1024 * 1024
         
-        # Detect if image is handwritten
-        is_handwritten = (edge_density < 0.06 and contrast < 60)
-        
-        # Calculate expected processing time and determine type
-        if is_handwritten:
-            expected_time = pixel_count / 1000000 * 40  # 40 seconds per million pixels for handwritten
-            img_type = "handwritten"
+        # Determine general document type for remaining images
+        if contrast > 70 and edge_density > 0.04:
+            return "document", width, height, file_size > 5 * 1024 * 1024
+        elif contrast < 40 and edge_density < 0.03:
+            return "low_quality", width, height, file_size > 5 * 1024 * 1024
         else:
-            expected_time = pixel_count / 1000000 * 20  # 20 seconds per million pixels for normal text
-            # Check if it's a document, natural image, or receipt
-            if contrast > 70:
-                img_type = "document"
-            else:
-                img_type = "natural"
-                
-        return img_type, width, height, file_size > 5 * 1024 * 1024
+            return "natural", width, height, file_size > 5 * 1024 * 1024
+            
     except Exception as e:
         logger.warning(f"Error detecting image type: {e}")
         return "document", 0, 0, False
@@ -341,13 +415,14 @@ def preprocess_id_card(file_path, target_width=1000):
     """
     try:
         import cv2
+        import numpy as np
         
         # Read image
         img = cv2.imread(file_path)
         if img is None:
             return file_path
             
-        # Resize image to manageable size
+        # Resize to manageable dimensions
         h, w = img.shape[:2]
         if w > target_width:
             scale = target_width / w
@@ -372,6 +447,158 @@ def preprocess_id_card(file_path, target_width=1000):
     except Exception as e:
         logger.error(f"Error preprocessing ID card: {e}")
         return file_path
+
+def _convert_pdf_to_image(pdf_path: str, page_num: int = 0):
+    """
+    Enhanced PDF to image conversion with better quality for OCR
+    
+    Args:
+        pdf_path: Path to PDF file
+        page_num: Page number (0-based)
+        
+    Returns:
+        Tuple of (path to converted image, total pages)
+    """
+    if not 'PDF2IMAGE_AVAILABLE' in globals() or not PDF2IMAGE_AVAILABLE:
+        logger.error("pdf2image library not available")
+        return None, 0
+        
+    try:
+        # Check total pages with PyPDF2 with better error handling
+        try:
+            from PyPDF2 import PdfReader
+            pdf = PdfReader(pdf_path)
+            total_pages = len(pdf.pages)
+            
+            # Get page dimensions for better conversion quality
+            page = pdf.pages[min(page_num, total_pages-1)]
+            width, height = page.mediabox.width, page.mediabox.height
+            is_landscape = width > height
+            
+        except Exception as e:
+            logger.error(f"Error reading PDF with PyPDF2: {e}")
+            # Fallback method to get page count
+            try:
+                import subprocess
+                # Use pdfinfo if available
+                try:
+                    output = subprocess.check_output(['pdfinfo', pdf_path]).decode('utf-8')
+                    for line in output.split('\n'):
+                        if 'Pages:' in line:
+                            total_pages = int(line.split('Pages:')[1].strip())
+                            break
+                    else:
+                        # If Pages: line not found, use pdf2image
+                        from pdf2image import convert_from_path
+                        total_pages = len(convert_from_path(pdf_path, 72, first_page=1, last_page=5))
+                except:
+                    # If pdfinfo fails, use pdf2image
+                    from pdf2image import convert_from_path
+                    total_pages = len(convert_from_path(pdf_path, 72, first_page=1, last_page=5))
+            except Exception as e2:
+                logger.error(f"Error getting PDF info: {e2}")
+                total_pages = 1  # Assume at least 1 page
+            
+            # Default to unknown orientation
+            is_landscape = False
+        
+        # Validate page number
+        if page_num < 0 or page_num >= total_pages:
+            logger.error(f"Invalid page number: {page_num}, total pages: {total_pages}")
+            return None, total_pages
+        
+        # Convert with pdf2image using high DPI for better OCR
+        try:
+            # Higher DPI for better quality, with memory optimization
+            # Adjust DPI based on PDF complexity
+            try:
+                import fitz  # PyMuPDF
+                doc = fitz.open(pdf_path)
+                page = doc[min(page_num, doc.page_count-1)]
+                
+                # Check if PDF has text content already (searchable PDF)
+                text = page.get_text()
+                has_text = len(text.strip()) > 100
+                
+                # If PDF already has text content, use higher DPI
+                dpi = 600 if has_text else 300
+                
+                # Adjust DPI based on page size to prevent memory issues
+                page_area = page.rect.width * page.rect.height
+                if page_area > 1000000:  # Large page
+                    dpi = 300
+            except:
+                # If PyMuPDF fails, use default DPI
+                dpi = 300
+                has_text = False
+            
+            # Convert using optimal settings
+            from pdf2image import convert_from_path
+            pages = convert_from_path(
+                pdf_path,
+                dpi,
+                first_page=page_num + 1,
+                last_page=page_num + 1,
+                use_cropbox=True,
+                transparent=False
+            )
+            
+            if pages:
+                # Save as high-quality PNG for better OCR
+                image_path = f"{pdf_path}_page_{page_num}.png"
+                pages[0].save(image_path, 'PNG')
+                
+                # Apply image enhancements for better OCR
+                try:
+                    import cv2
+                    img = cv2.imread(image_path)
+                    
+                    # Apply image preprocessing if needed
+                    if not has_text:  # Only enhance if it's not a searchable PDF
+                        # Convert to grayscale
+                        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+                        
+                        # Apply adaptive histogram equalization for better contrast
+                        clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
+                        enhanced = clahe.apply(gray)
+                        
+                        # Denoise if necessary
+                        denoised = cv2.fastNlMeansDenoising(enhanced, None, 10, 7, 21)
+                        
+                        # Save enhanced image
+                        cv2.imwrite(image_path, denoised)
+                except Exception as e:
+                    logger.warning(f"Image enhancement failed: {e}")
+                
+                return image_path, total_pages
+        except Exception as e:
+            logger.error(f"Error using pdf2image: {e}")
+            
+            # Try with PyMuPDF as alternative
+            try:
+                import fitz  # PyMuPDF
+                doc = fitz.open(pdf_path)
+                page = doc[min(page_num, doc.page_count-1)]
+                
+                # Render page to image with high resolution
+                zoom = 4.0  # Higher zoom for better quality
+                mat = fitz.Matrix(zoom, zoom)
+                pix = page.get_pixmap(matrix=mat)
+                
+                # Save image
+                image_path = f"{pdf_path}_page_{page_num}.png"
+                pix.save(image_path)
+                
+                return image_path, doc.page_count
+            except Exception as e2:
+                logger.error(f"Error using PyMuPDF: {e2}")
+        
+        # Return error
+        return None, total_pages
+            
+    except Exception as e:
+        logger.error(f"Error converting PDF: {e}")
+        return None, 0
 
 @api_bp.route('/process', methods=['POST'])
 def process_file():
@@ -462,6 +689,9 @@ def process_file():
                     logger.error(f"Error in specialized ID card processing: {str(e)}")
                     # Continue with standard processing if specialized method fails
                 
+            elif img_type == "table":
+                process_type = "accurate"  # Use accurate mode for tables
+                logger.info(f"Detected table, switching to accurate mode")
             elif is_large:
                 # For large files, use faster processing
                 process_type = "fast"
@@ -497,20 +727,22 @@ def process_file():
         else:
             timeout = default_timeout
             
-        # Check if the file is a PDF and add PyPDF2 if needed
+        # Check if the file is a PDF
         if file_path.lower().endswith('.pdf'):
-            try:
-                import PyPDF2
-            except ImportError:
-                logger.warning("PyPDF2 not installed. Installing...")
-                import subprocess
-                try:
-                    subprocess.check_call(['pip', 'install', 'PyPDF2'])
-                except:
-                    return jsonify({
-                        'status': 'error',
-                        'message': 'Missing PDF processing dependencies. Please install PyPDF2.'
-                    }), 500
+            logger.info(f"Processing PDF file: {file_path}")
+            
+            # Convert PDF to image first
+            image_path, total_pages = _convert_pdf_to_image(file_path, page)
+            
+            if not image_path:
+                return jsonify({
+                    'status': 'error',
+                    'message': 'Failed to convert PDF to image'
+                }), 500
+                
+            # Update file path to use the converted image
+            file_path = image_path
+            logger.info(f"PDF converted to image: {image_path}")
         
         # Generate task ID for tracking
         import uuid
@@ -728,7 +960,7 @@ def get_stats():
     stats = convert_numpy_types(stats)
     
     api_stats = {
-        'api_version': '1.1',  # Updated version
+        'api_version': '1.2',  # Updated version
         'ocr_engine': stats,
         'markdown_files': len(get_markdown_files()),
         'uptime': int(time.time() - start_time),
@@ -765,7 +997,7 @@ def api_home():
     """API home endpoint"""
     return jsonify({
         'name': 'SmartGlass OCR API',
-        'version': '1.1',  # Updated version
+        'version': '1.2',  # Updated version
         'documentation': '/api/docs',
         'endpoints': [
             {'path': '/api/process', 'method': 'POST', 'description': 'Process an image or PDF file'},

@@ -1919,3 +1919,47 @@ TypeError: ImageProcessor._preprocess_multi_column() takes 4 positional argument
 2025-05-06 08:45:14,548 - ERROR - Error in specialized ID card processing: SmartGlassOCR.process_id_card() got an unexpected keyword argument 'image_path'
 2025-05-06 08:45:18,358 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
 2025-05-06 08:46:24,768 - INFO - 127.0.0.1 - - [06/May/2025 08:46:24] "POST /api/process HTTP/1.1" 200 -
+2025-05-06 09:30:52,214 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-06 09:30:56,070 - INFO - EasyOCR initialized successfully
+2025-05-06 09:31:03,263 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.8.192:5000
+2025-05-06 09:31:03,263 - INFO - [33mPress CTRL+C to quit[0m
+2025-05-06 09:31:03,268 - INFO -  * Restarting with stat
+2025-05-06 09:31:11,358 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-06 09:31:18,098 - WARNING -  * Debugger is active!
+2025-05-06 09:31:18,112 - INFO -  * Debugger PIN: 409-810-023
+2025-05-06 09:31:23,416 - ERROR - Error in specialized ID card processing: SmartGlassOCR.process_id_card() got an unexpected keyword argument 'image_path'
+2025-05-06 09:31:24,997 - WARNING - Auto-rotation detection failed: (1, 'Estimating resolution as 336 Too few characters. Skipping this page Warning. Invalid resolution 0 dpi. Using 70 instead. Too few characters. Skipping this page Error during processing.')
+2025-05-06 09:31:26,204 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-06 09:32:21,431 - ERROR - Error processing file: 'tuple' object has no attribute 'get'
+2025-05-06 09:32:21,449 - ERROR - Traceback (most recent call last):
+  File "D:\KERJA\Bantu Teman\smartglass-ocr-api\app\core\ocr_processor.py", line 142, in process_file
+    md_content = self.markdown_formatter.format_ocr_results(results, original_filename)
+  File "D:\KERJA\Bantu Teman\smartglass-ocr-api\app\core\markdown_formatter.py", line 32, in format_ocr_results
+    md_content.append(f"status: {results.get('status', 'unknown')}")
+AttributeError: 'tuple' object has no attribute 'get'
+
+2025-05-06 09:32:21,452 - INFO - 127.0.0.1 - - [06/May/2025 09:32:21] "POST /api/process HTTP/1.1" 200 -
+2025-05-06 09:32:48,615 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-06 09:34:14,487 - ERROR - Error processing file: 'tuple' object has no attribute 'get'
+2025-05-06 09:34:14,489 - ERROR - Traceback (most recent call last):
+  File "D:\KERJA\Bantu Teman\smartglass-ocr-api\app\core\ocr_processor.py", line 142, in process_file
+    md_content = self.markdown_formatter.format_ocr_results(results, original_filename)
+  File "D:\KERJA\Bantu Teman\smartglass-ocr-api\app\core\markdown_formatter.py", line 32, in format_ocr_results
+    md_content.append(f"status: {results.get('status', 'unknown')}")
+AttributeError: 'tuple' object has no attribute 'get'
+
+2025-05-06 09:34:14,491 - INFO - 127.0.0.1 - - [06/May/2025 09:34:14] "POST /api/process HTTP/1.1" 200 -
+2025-05-06 09:34:26,587 - ERROR - Error in specialized ID card processing: SmartGlassOCR.process_id_card() got an unexpected keyword argument 'image_path'
+2025-05-06 09:34:29,676 - WARNING - Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+2025-05-06 09:35:39,561 - ERROR - Error processing file: 'tuple' object has no attribute 'get'
+2025-05-06 09:35:39,562 - ERROR - Traceback (most recent call last):
+  File "D:\KERJA\Bantu Teman\smartglass-ocr-api\app\core\ocr_processor.py", line 142, in process_file
+    md_content = self.markdown_formatter.format_ocr_results(results, original_filename)
+  File "D:\KERJA\Bantu Teman\smartglass-ocr-api\app\core\markdown_formatter.py", line 32, in format_ocr_results
+    md_content.append(f"status: {results.get('status', 'unknown')}")
+AttributeError: 'tuple' object has no attribute 'get'
+
+2025-05-06 09:35:39,562 - INFO - 127.0.0.1 - - [06/May/2025 09:35:39] "POST /api/process HTTP/1.1" 200 -

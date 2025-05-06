@@ -1826,3 +1826,69 @@ class ImageProcessor:
         except Exception as e:
             logger.warning(f"Auto-rotation failed: {e}")
             return image  # Return original if rotation fails
+        
+    def _preprocess_handwritten(self, base_image, image_data, processed_images):
+        """
+        Enhanced preprocessing for handwritten text
+        
+        Args:
+            base_image: Base image to process
+            image_data: Dictionary to store processed images
+            processed_images: List to track processing methods
+        """
+        # Apply specialized bilateral filtering to preserve edge details while removing noise
+        bilateral = cv2.bilateralFilter(base_image, 15, 40, 40)
+        image_data["bilateral"] = bilateral
+        processed_images.append("bilateral")
+        
+        # Enhanced contrast adjustment for handwritten text
+        clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(8,8))
+        contrast_enhanced = clahe.apply(bilateral)
+        image_data["contrast"] = contrast_enhanced
+        processed_images.append("contrast")
+        
+        # Apply specialized adaptive thresholding for handwritten text
+        # Use larger block size and custom constant value
+        adaptive = cv2.adaptiveThreshold(contrast_enhanced, 255, 
+                                    cv2.ADAPTIVE_THRESH_GAUSSIAN_C, 
+                                    cv2.THRESH_BINARY, 21, 12)
+        image_data["adaptive"] = adaptive
+        processed_images.append("adaptive")
+        
+        # Apply stroke enhancement for better text recognition
+        # Use morphological operations to enhance pen/pencil strokes
+        kernel_line = np.ones((2, 2), np.uint8)
+        stroke_enhanced = cv2.morphologyEx(adaptive, cv2.MORPH_CLOSE, kernel_line)
+        image_data["stroke_enhanced"] = stroke_enhanced
+        processed_images.append("stroke_enhanced")
+        
+        # Try local contrast enhancement for difficult handwriting
+        # Divide the image into smaller regions and apply histogram equalization
+        h, w = base_image.shape
+        grid_size = 50
+        local_enhanced = np.zeros_like(base_image)
+        
+        for i in range(0, h, grid_size):
+            for j in range(0, w, grid_size):
+                roi = base_image[i:min(i+grid_size, h), j:min(j+grid_size, w)]
+                if roi.size > 0:
+                    # Apply histogram equalization to this region
+                    roi_enhanced = cv2.equalizeHist(roi)
+                    local_enhanced[i:min(i+grid_size, h), j:min(j+grid_size, w)] = roi_enhanced
+        
+        # Apply thresholding to the locally enhanced image
+        _, local_thresh = cv2.threshold(local_enhanced, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+        image_data["local_thresh"] = local_thresh
+        processed_images.append("local_thresh")
+        
+        # Add grayscale normalization to handle varying pen pressures
+        normalized = cv2.normalize(contrast_enhanced, None, 0, 255, cv2.NORM_MINMAX)
+        image_data["normalized"] = normalized
+        processed_images.append("normalized")
+        
+        # Special processing for dark handwriting
+        # Inverting and then thresholding can sometimes help with dark handwriting
+        inverted = cv2.bitwise_not(contrast_enhanced)
+        _, inv_thresh = cv2.threshold(inverted, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+        image_data["inv_thresh"] = inv_thresh
+        processed_images.append("inv_thresh")
