@@ -233,6 +233,23 @@ def detect_image_type(file_path):
             gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         else:
             gray = img
+        
+        # Calculate aspect ratio - important for ID card detection
+        aspect_ratio = width / height
+        
+        # ID card detection - common ID cards have aspect ratios between 1.4 and 1.7
+        is_id_card = 1.4 < aspect_ratio < 1.7
+        
+        # Check for text field patterns typical of ID cards
+        if is_id_card:
+            # Simple check for text regions in ID cards
+            edges = cv2.Canny(gray, 50, 150)
+            contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            text_regions = len(contours)
+            
+            # ID cards typically have multiple text regions
+            if text_regions > 8:
+                return "id_card", width, height, file_size > 5 * 1024 * 1024
             
         # Calculate edge density using Canny
         edges = cv2.Canny(gray, 50, 150)
@@ -249,9 +266,6 @@ def detect_image_type(file_path):
             has_strong_colors = color_std > 50
         else:
             has_strong_colors = False
-        
-        # Calculate aspect ratio
-        aspect_ratio = width / height
         
         # Look for rectangular contours (common in signage)
         has_rectangular_contour = False
@@ -341,6 +355,9 @@ def process_file():
             elif img_type == "signage" or handle_as_signage == 'true':
                 process_type = "signage"
                 logger.info(f"Detected signage or banner, switching to signage mode")
+            elif img_type == "id_card":
+                process_type = "id_card"  # New process type for ID cards
+                logger.info(f"Detected ID card, switching to ID card mode")
             elif is_large:
                 # For large files, use faster processing
                 process_type = "fast"
@@ -353,6 +370,12 @@ def process_file():
             ocr_processor.ocr_engine.config["adaptive_binarization"] = True
             ocr_processor.ocr_engine.config["edge_enhancement"] = True
             ocr_processor.ocr_engine.config["perspective_correction"] = True
+        elif process_type == 'id_card':  # Add configuration for ID cards
+            ocr_processor.ocr_engine.config["preprocessing_level"] = "id_card"
+            ocr_processor.ocr_engine.config["use_all_available_engines"] = True
+            ocr_processor.ocr_engine.config["adaptive_binarization"] = True
+            ocr_processor.ocr_engine.config["edge_enhancement"] = True
+            ocr_processor.ocr_engine.config["lightweight_mode"] = True  # Use lightweight mode for speed
         
         # Calculate timeout based on file size and processing type
         file_size = os.path.getsize(file_path)
@@ -363,6 +386,8 @@ def process_file():
             timeout = min(default_timeout, 60)  # Shorter timeout for fast mode
         elif process_type == 'handwritten':
             timeout = max(default_timeout, 300)  # Longer timeout for handwritten
+        elif process_type == 'id_card':
+            timeout = max(default_timeout, 360)  # INCREASED TIMEOUT FOR ID CARDS
         elif file_size > 5 * 1024 * 1024:  # Files over 5MB
             timeout = max(default_timeout, 240)  # Longer timeout for large files
         else:

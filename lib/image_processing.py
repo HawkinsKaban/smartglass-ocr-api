@@ -1185,43 +1185,77 @@ class ImageProcessor:
         processed_images.append("sharpened_thresh")
     
     def _preprocess_id_card(self, base_image, image_data, processed_images):
-        """Optimized preprocessing for ID cards"""
-        # Noise reduction for small text
-        bilateral = cv2.bilateralFilter(base_image, 9, 75, 75)
-        image_data["bilateral"] = bilateral
-        processed_images.append("bilateral")
+        """
+        Optimized preprocessing for ID cards
         
-        # Enhance contrast to make small text more readable
+        Args:
+            base_image: Base image to process
+            image_data: Dictionary to store processed images
+            processed_images: List to track processing methods
+        """
+        # Resize for faster processing - ID cards don't need ultra-high resolution
+        h, w = base_image.shape[:2]
+        if w > 1500:
+            scale = 1500 / w
+            resized = cv2.resize(base_image, (int(w * scale), int(h * scale)), 
+                              interpolation=cv2.INTER_AREA)
+            image_data["resized"] = resized
+            processed_images.append("resized")
+            base_image = resized
+        
+        # Apply noise reduction - ID cards often have watermarks and background patterns
+        denoised = cv2.fastNlMeansDenoising(base_image, None, 10, 7, 21)
+        image_data["denoised"] = denoised
+        processed_images.append("denoised")
+        
+        # Apply enhanced contrast to make text more readable
         clahe = cv2.createCLAHE(clipLimit=2.5, tileGridSize=(8,8))
-        contrast_enhanced = clahe.apply(bilateral)
+        contrast_enhanced = clahe.apply(denoised)
         image_data["contrast"] = contrast_enhanced
         processed_images.append("contrast")
         
-        # Apply Otsu thresholding
-        _, otsu = cv2.threshold(contrast_enhanced, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+        # Apply sharpening to make text clearer
+        kernel = np.array([[-1,-1,-1], [-1,9,-1], [-1,-1,-1]])
+        sharpened = cv2.filter2D(contrast_enhanced, -1, kernel)
+        image_data["sharpened"] = sharpened
+        processed_images.append("sharpened")
+        
+        # Apply multiple thresholding methods for better text extraction
+        _, otsu = cv2.threshold(sharpened, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
         image_data["otsu"] = otsu
         processed_images.append("otsu")
         
-        # Apply adaptive thresholding - often better for variable lighting in ID cards
+        # Additional adaptive thresholding - good for varying lighting in ID cards
         adaptive = cv2.adaptiveThreshold(contrast_enhanced, 255, 
                                       cv2.ADAPTIVE_THRESH_GAUSSIAN_C, 
-                                      cv2.THRESH_BINARY, 11, 2)
+                                      cv2.THRESH_BINARY, 11, 5)
         image_data["adaptive"] = adaptive
         processed_images.append("adaptive")
         
-        # Edge enhancement for better text detection in security features
-        edges = cv2.Canny(contrast_enhanced, 50, 150)
-        dilated_edges = cv2.dilate(edges, np.ones((2,2), np.uint8), iterations=1)
-        edge_enhanced = cv2.addWeighted(contrast_enhanced, 0.8, dilated_edges.astype(np.float32), 0.2, 0)
-        image_data["edge_enhanced"] = edge_enhanced.astype(np.uint8)
-        processed_images.append("edge_enhanced")
+        # Strong adaptive thresholding for better field extraction
+        strong_adaptive = cv2.adaptiveThreshold(sharpened, 255, 
+                                             cv2.ADAPTIVE_THRESH_GAUSSIAN_C, 
+                                             cv2.THRESH_BINARY, 15, 8)
+        image_data["strong_adaptive"] = strong_adaptive
+        processed_images.append("strong_adaptive")
         
-        # Add local adaptive thresholding with smaller window for fine details
-        adaptive_small = cv2.adaptiveThreshold(contrast_enhanced, 255, 
-                                            cv2.ADAPTIVE_THRESH_GAUSSIAN_C, 
-                                            cv2.THRESH_BINARY, 7, 2)
-        image_data["adaptive_small"] = adaptive_small
-        processed_images.append("adaptive_small")
+        # Create inverse image - sometimes works better for colored backgrounds
+        inverted = cv2.bitwise_not(contrast_enhanced)
+        _, inv_otsu = cv2.threshold(inverted, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+        image_data["inv_otsu"] = cv2.bitwise_not(inv_otsu)  # Re-invert after thresholding
+        processed_images.append("inv_otsu")
+        
+        # Try glare reduction if needed
+        if self._has_glare(base_image):
+            glare_reduced = self._advanced_glare_reduction(base_image)
+            image_data["glare_reduced"] = glare_reduced
+            processed_images.append("glare_reduced")
+            
+            # Apply Otsu on glare reduced image
+            _, glare_otsu = cv2.threshold(glare_reduced, 0, 255, 
+                                      cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+            image_data["glare_otsu"] = glare_otsu
+            processed_images.append("glare_otsu")
     
     def _preprocess_natural(self, base_image, image_data, processed_images):
         """Optimized preprocessing for natural scenes"""
@@ -1673,7 +1707,7 @@ class ImageProcessor:
         elif image_type == ImageType.RECEIPT:
             return ProcessingStrategy.RECEIPT
         elif image_type == ImageType.ID_CARD:
-            return ProcessingStrategy.ID_CARD
+            return ProcessingStrategy.ID_CARD  # Use specific strategy for ID cards
         elif image_type == ImageType.HANDWRITTEN:
             return ProcessingStrategy.HANDWRITTEN
         elif image_type == ImageType.BOOK_PAGE:
@@ -1686,7 +1720,7 @@ class ImageProcessor:
             return ProcessingStrategy.FORM
         elif image_type == ImageType.NEWSPAPER:
             return ProcessingStrategy.MULTI_COLUMN
-        elif image_type == ImageType.SIGNAGE:  # Add this condition for signage
+        elif image_type == ImageType.SIGNAGE:
             return ProcessingStrategy.SIGNAGE
         
         # For low quality images, use aggressive processing

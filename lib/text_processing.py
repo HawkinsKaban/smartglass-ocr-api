@@ -263,29 +263,24 @@ class TextProcessor:
         """
         # Fix common ID card fields with enhanced patterns
         replacements = {
-            r'\bNAME\b': 'NAME',
-            r'\bADDRESS\b': 'ADDRESS',
-            r'\bDOB\b': 'DATE OF BIRTH',
-            r'\bDATI?E? OF BIRTH\b': 'DATE OF BIRTH',
-            r'\bEXP(?:IRATION)? ?DATI?E?\b': 'EXPIRATION DATE',
-            r'\bSEX\b': 'SEX',
-            r'\bGENDER\b': 'GENDER',
-            r'\bHEIGH[TI]\b': 'HEIGHT',
-            r'\bWEIGH[TI]\b': 'WEIGHT',
-            r'\bEYES?\b': 'EYES',
-            r'\bHAIR\b': 'HAIR',
-            r"\b(?:DRIVER'?S|DRIV|ORIV) LIC[, ]?(?:NO|NUM|NUMBER)\b": 'DRIVER\'S LICENSE NO',
-            r'\bISSUE(?:D)? DATE\b': 'ISSUE DATE',
-            r'\bIDENTITY(?:\s+CARD)?\b': 'IDENTITY CARD',
-            r'\bID(?:\s+CARD)?\b': 'ID CARD',
-            r'\bCITIZEN\b': 'CITIZEN',
-            r'\bNATIONALITY\b': 'NATIONALITY',
-            r'\bPLACE OF BIRTH\b': 'PLACE OF BIRTH',
-            r'\bRELIGION\b': 'RELIGION',
-            r'\bMARITAL STATUS\b': 'MARITAL STATUS',
-            r'\bBLOOD(?: TYPE)?\b': 'BLOOD TYPE',
-            r'\bOCCUPATION\b': 'OCCUPATION',
-            r'\bSIGNATURE\b': 'SIGNATURE'
+            r'\bNAME\b': 'NAMA',  # Use Indonesian labels for Indonesian ID cards
+            r'\bNAMA\b': 'NAMA',
+            r'\bADDRESS\b': 'ALAMAT',
+            r'\bALAMAT\b': 'ALAMAT',
+            r'\bTEMPAT/TGL LAHIR\b': 'TEMPAT/TGL LAHIR',
+            r'\bTEMPAT TGL LAHIR\b': 'TEMPAT/TGL LAHIR', 
+            r'\bJENIS KELAMIN\b': 'JENIS KELAMIN',
+            r'\bALAMAT\b': 'ALAMAT',
+            r'\bAGAMA\b': 'AGAMA',
+            r'\bSTATUS PERKAWINAN\b': 'STATUS PERKAWINAN',
+            r'\bPEKERJAAN\b': 'PEKERJAAN',
+            r'\bKEWARGANEGARARAN\b': 'KEWARGANEGARAAN',
+            r'\bBERLAKU HINGGA\b': 'BERLAKU HINGGA',
+            r'\bNIK\b': 'NIK',
+            r'\bDESA/KELURAHAN\b': 'DESA/KELURAHAN',
+            r'\bKECAMATAN\b': 'KECAMATAN',
+            r'\bKABUPATEN\b': 'KABUPATEN',
+            r'\bPROVINSI\b': 'PROVINSI'
         }
         
         for pattern, replacement in replacements.items():
@@ -293,10 +288,9 @@ class TextProcessor:
         
         # Format common ID fields with colon for better readability
         id_fields = [
-            'NAME', 'ADDRESS', 'DATE OF BIRTH', 'EXPIRATION DATE', 'SEX', 'GENDER',
-            'HEIGHT', 'WEIGHT', 'EYES', 'HAIR', 'DRIVER\'S LICENSE NO', 'ISSUE DATE',
-            'PLACE OF BIRTH', 'NATIONALITY', 'RELIGION', 'MARITAL STATUS', 'BLOOD TYPE',
-            'OCCUPATION'
+            'NAMA', 'ALAMAT', 'TEMPAT/TGL LAHIR', 'JENIS KELAMIN', 'AGAMA', 
+            'STATUS PERKAWINAN', 'PEKERJAAN', 'KEWARGANEGARAAN', 'BERLAKU HINGGA', 
+            'DESA/KELURAHAN', 'KECAMATAN', 'KABUPATEN', 'PROVINSI'
         ]
         
         for field in id_fields:
@@ -305,34 +299,24 @@ class TextProcessor:
             replacement = r'\1: \2'
             text = re.sub(pattern, replacement, text)
         
-        # Format dates correctly (various formats)
-        date_patterns = [
-            # MM/DD/YYYY or similar
-            (r'(\d{1,2})[/\-\.\\](\d{1,2})[/\-\.\\](\d{2,4})', r'\1/\2/\3'),
-            # MMDDYYYY
-            (r'(\d{2})(\d{2})(\d{4})', r'\1/\2/\3'),
-            # DD-MMM-YYYY
-            (r'(\d{1,2})[-\s](JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)[-\s](\d{2,4})', 
-             r'\1 \2 \3')
-        ]
+        # Fix NIK format (16 digits for Indonesian ID cards)
+        nik_matches = re.search(r'NIK\s*:?\s*([0-9\s]+)', text, re.IGNORECASE)
+        if nik_matches:
+            nik = nik_matches.group(1).replace(' ', '')
+            if len(nik) >= 15:  # Only replace if it's a valid length NIK
+                formatted_nik = ''
+                for i, digit in enumerate(nik[:16]):  # Limit to 16 digits
+                    formatted_nik += digit
+                    if (i + 1) % 4 == 0 and i < 15:  # Add spaces for readability
+                        formatted_nik += ' '
+                text = re.sub(r'NIK\s*:?\s*[0-9\s]+', f'NIK: {formatted_nik}', text, flags=re.IGNORECASE)
         
-        for pattern, replacement in date_patterns:
-            text = re.sub(pattern, replacement, text, flags=re.IGNORECASE)
-        
-        # Correct ID numbers (format various ID numbers)
-        # Remove unwanted spaces and characters in ID numbers
-        id_pattern = r'(?:ID|NUMBER|LICENSE|NO|#)[:.\s-]*([A-Z0-9][\sA-Z0-9\-\.]{4,})'
-        matches = re.finditer(id_pattern, text, re.IGNORECASE)
-        
-        for match in matches:
-            raw_id = match.group(1)
-            # Remove spaces and unwanted characters
-            clean_id = re.sub(r'[^A-Z0-9]', '', raw_id, flags=re.IGNORECASE)
-            # Format based on length
-            if len(clean_id) in [9, 10]:
-                # Common ID lengths - add hyphens for readability
-                formatted_id = '-'.join([clean_id[:3], clean_id[3:6], clean_id[6:]])
-                text = text.replace(raw_id, formatted_id)
+        # Fix date formats for Indonesian ID cards (DD-MM-YYYY)
+        date_matches = re.finditer(r'(\d{1,2})[/\-\.\\](\d{1,2})[/\-\.\\](\d{2,4})', text)
+        for match in date_matches:
+            day, month, year = match.groups()
+            formatted_date = f"{day.zfill(2)}-{month.zfill(2)}-{year.zfill(2 if len(year) == 2 else 4)}"
+            text = text.replace(match.group(0), formatted_date)
         
         return text
     

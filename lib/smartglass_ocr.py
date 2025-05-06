@@ -469,16 +469,7 @@ class SmartGlassOCR:
         return results
     
     def _process_image(self, image_path: str, language: str) -> dict:
-        """
-        Process an image through enhanced pipeline and OCR
-        
-        Args:
-            image_path: Path to the image
-            language: OCR language
-            
-        Returns:
-            Dictionary with OCR results
-        """
+        """Process an image through enhanced pipeline and OCR"""
         if not CV2_AVAILABLE or not PIL_AVAILABLE:
             return {"status": "error", "message": "Required image processing libraries not available"}
         
@@ -506,12 +497,16 @@ class SmartGlassOCR:
             # Step 2: Analyze image with enhanced analysis for better type detection
             image_stats = self.image_processor.analyze_image(image)
             
+            # For ID cards, force lightweight mode for faster processing
+            if image_stats.image_type == ImageType.ID_CARD:
+                self.config["lightweight_mode"] = True
+                logger.info("Detected ID card, enabling lightweight mode for faster processing")
+            
             logger.info(f"Enhanced image analysis: {image_stats.image_type.value}, " 
                     f"{image_stats.width}x{image_stats.height}, "
                     f"brightness: {image_stats.brightness:.1f}, "
                     f"contrast: {image_stats.contrast:.1f}, "
-                    f"blur: {image_stats.blur:.1f}, "
-                    f"table_likelihood: {image_stats.table_likelihood:.2f}")
+                    f"blur: {image_stats.blur:.1f}")
             
             # Step 3: Determine the best processing strategy based on image type and stats
             strategy = self.image_processor.determine_processing_strategy(image_stats)
